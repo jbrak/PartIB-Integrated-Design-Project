@@ -30,8 +30,9 @@ if __name__ == '__main__':
     TJunction(2, missing='w', n=3, e=4, s=1),
     Corner(3, ('s', 'e'), s=2, e=5),
     DeadEnd(4, w=2),
-    Corner(5, ('w', 'n'), w=3, n=6),
-    DeadEnd(6, s=5)
+    Corner(5, ('w', 'n'), w=3, n=7),
+    DeadEnd(6, s=7),
+    Marker(7, {'s':5, 'n':6})
     )
 
     m.assert_consistent()
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     screen = ttl.Screen()
     screen.title("Map Simulation")
     screen.setup(width=800, height=600)
-    screen.bgcolor("white")
+    screen.bgcolor("palegreen")
     t = ttl.Turtle()
     screen.tracer(False)
     t.hideturtle()

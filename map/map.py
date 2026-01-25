@@ -96,7 +96,7 @@ class Marker(Node):
     def __init__(self, id, connections: dict):
         ''' Initializes a Marker with two colinear connections.'''
         # Require exactly two co-linear connections
-        dirs = set(self.connections.keys())
+        dirs = set(connections.keys())
         if dirs not in ({'n', 's'}, {'e', 'w'}):
             raise ValueError(
                 "MarkerNode must have exactly two colinear connections: "
