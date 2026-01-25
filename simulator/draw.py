@@ -3,7 +3,7 @@ from turtle import Turtle
 
 from simulator.map import *
 from map.map import *
-
+'''python -m simulator.draw'''
 def draw_nodes(t:Turtle,start_node, end_node):
     ''' Draws a connection between two nodes on the map.'''
 
