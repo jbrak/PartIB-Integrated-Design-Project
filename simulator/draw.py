@@ -86,10 +86,10 @@ def sim_turn(r:DrawableRobot2):
 
     r.t.setheading(heading_map[r.direction])
 
-def initialize_simulator(m:Map, robot:Robot):
+def initialize_simulator(m:Map, robot:Robot, LENGTH=60, start_pos=(0,-100)):
     '''Initializes the simulator environment.'''
     # Create a drawable map with starting position
-    dm = DrawableMap(m, start_pos=(0, -100))
+    dm = DrawableMap(m, start_pos=start_pos, LENGTH=LENGTH)
 
     # Set up the turtle graphics screen
     screen = ttl.Screen()

@@ -65,10 +65,16 @@ class DrawableMap():
         for direction, connected_id in node.connections.items():
             connected_node = self.nodes.get(connected_id)
             if not connected_node.position:
+
+                if connected_node.type == 'dead_end':
+                    L = LENGTH/3
+                else:
+                    L = LENGTH
+
                 offset = self.direction_to_offset(direction)
                 connected_node.position = (
-                    node.position[0] + LENGTH*offset[0],
-                    node.position[1] + LENGTH*offset[1]
+                    node.position[0] + L*offset[0],
+                    node.position[1] + L*offset[1]
                 )
                 self.nodes[connected_id] = connected_node
                 self.to_define.append(connected_id)

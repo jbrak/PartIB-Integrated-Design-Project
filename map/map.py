@@ -1,6 +1,6 @@
 class Node:
     ''' Represents a node in the map with connections to other nodes. '''
-    def __init__(self, id, connections: dict):
+    def __init__(self, id:int, connections: dict):
         ''' Initializes a Node with an ID and its connections.'''
 
         keys = set(connections.keys())
