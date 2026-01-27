@@ -1,6 +1,28 @@
 # Part IB Integrated Design Project (IDP)
 
-This repository contains example source for various elements of the IDP project.
+This repository contains our code and documentation for the Part IB Inegrated design project (IDP) at the University of Cambridge.
+
+## Reference Frames
+The code uses the following reference frames:
+1. Map Frame: 
+2. 
+
+### 1. Map Frame
+A fixed frame of reference relative to the provided map.
+
+This uses North, South, East and West as directions oriented as so:
+
+
+In the project these are often shorted to n, s, e and w.
+
+### 2. Robot Frame
+A frame of reference fixed to the robot
+
+This uses Port, Starboard, Front and Back as directions oriented as so:
+
+In the project these are often shorted to p, s, f and b.
+
+Center may be used to refer to objects closer to the front-back center line of the robot. It is shortened to c.
 
 ## License and copyright
 
