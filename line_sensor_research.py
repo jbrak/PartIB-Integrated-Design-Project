@@ -2,6 +2,7 @@ from config.config import load_config
 from hardware.motor import Motors
 from hardware.line import LineSensorArray, LineSensorArrayAlt
 from motion.line import check_straight_line, check_straight_line_alt
+from time import sleep
 
 def main():
     # read configuration file
@@ -32,9 +33,12 @@ def main():
         input("Press Enter to continue...")
 
         motors.forward()
-
+        t=0
         while True:
+            t+=1
             check_straight_line(motors, LineSensors, t="Test 0")
+            print(LineSensors.read_all())
+            sleep(0.5)
 
     elif config['altArray'] == 1:
         LineSensors = LineSensorArrayAlt(
@@ -51,6 +55,8 @@ def main():
 
         while True:
             check_straight_line_alt(motors, LineSensors, t="Test 0")
+            print(LineSensors.read_all())
+            sleep(0.5)
 
     else:
         raise ValueError("Invalid altArray configuration value. Must be 0 or 1.")
