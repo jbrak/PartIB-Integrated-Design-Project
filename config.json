@@ -1,19 +1,27 @@
 {
-  "Motor": {
-    "Starboard": {
+  "motor": {
+    "starboard": {
       "pinDIR": 4,
       "pinPWM": 5
     },
-    "Port": {
+    "port": {
       "pinDIR": 7,
       "pinPWM": 6
     }
   },
 
-  "LineSensor": {
+  "lineSensor": {
     "pinPort": 18,
     "pinCenterPort": 19,
     "pinCenterStarboard": 20,
     "pinStarboard": 21
-  }
+  },
+
+  "lineSensorAlt": {
+    "pinPort": 18,
+    "pinFront": 19,
+    "pinBack": 20,
+    "pinStarboard": 21
+  },
+  "altArray" : 0
 }
