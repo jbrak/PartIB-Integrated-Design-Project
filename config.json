@@ -2,17 +2,20 @@
   "motor": {
     "port": {
       "pinDIR": 4,
-      "pinPWM": 5
+      "pinPWM": 5,
+      "driftCompensation" : 0
     },
     "starboard": {
       "pinDIR": 7,
-      "pinPWM": 6
+      "pinPWM": 6,
+      "driftCompensation" : 0
     }
   },
   "lineSensor": {
-    "pinPort": 21,
+    "pinPort": 18,
     "pinCenterPort": 19,
     "pinCenterStarboard": 20,
-    "pinStarboard": 18
-  }
+    "pinStarboard": 21
+  },
+  "buttonPin": 0
 }

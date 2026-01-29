@@ -1,36 +1,61 @@
 from config.config import load_config
 from hardware.motor import Motors
-from hardware.line import LineSensorArray, LineSensorArrayAlt
-from motion.line import check_straight_line, check_straight_line_alt
-from time import sleep
+from hardware.line import LineSensorArray
+from hardware.button import Button
+from motion.line import check_straight_line
+from utime import sleep
 
-config = load_config()
-motors = Motors(pDIR=config['motor']['port']['pinDIR'],
-                pPWM=config['motor']['port']['pinPWM'],
-                sDIR=config['motor']['starboard']['pinDIR'],
-                sPWM=config['motor']['starboard']['pinPWM'])
+def main(motors, LineSensors, button:Button):
+    motors.off()
 
-# motors.forward(speed = speed)
-sleep(5)
-motors.off()
+    #input("Press Enter to continue...")
 
-sScale = 1.05
-pScale = 0.95
-speed = 50
+    speed = 100
+    offsetP = 0
+    offsetS = 0
 
-speedS = int(speed * sScale)
-speedP = int(speed * pScale)
+    while True:
+        print(button.toggle)
+        if (button.toggle)%2 == 1:
+            offsetP, offsetS = check_straight_line(motors, LineSensors, offsetP, offsetS)
+            sensor_data = LineSensors.read_all()
+            print(
+                 f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
+            motors.p.forward(speed, offset=offsetP)
+            motors.s.forward(speed, offset=offsetS)
+        else:
+            motors.off()
 
-print('Initialized')
-print('waiting 10 seconds')
+if __name__ == '__main__':
+    # read configuration file
+    config = load_config()
 
-# sleep(3)
+    # initialize motors
+    motors = Motors(pDIR = config['motor']['port']['pinDIR'],
+                    pPWM = config['motor']['port']['pinPWM'],
+                    sDIR = config['motor']['starboard']['pinDIR'],
+                    sPWM = config['motor']['starboard']['pinPWM'],
+                    sdrift_compensation=config['motor']['starboard']['driftCompensation'],
+                    pdrift_compensation=config['motor']['port']['driftCompensation'])
 
-motors.s.forward(speed=speedS)
-motors.p.forward(speed=speedP)
-print('running 10 seconds')
-# motors.forward(speed = speed)
-sleep(5)
-print('turning off motors')
-motors.off()
+    print("Motors successfully initialized.")
+
+    # initialize line sensor array (choose configuration based on config)
+    # run checking function based on configuration
+    LineSensors = LineSensorArray(
+        p=config['lineSensor']['pinPort'],
+        cp=config['lineSensor']['pinCenterPort'],
+        cs=config['lineSensor']['pinCenterStarboard'],
+        s=config['lineSensor']['pinStarboard']
+    )
+
+    print("Line successfully initialized in configuration 0.")
+
+    button = Button(pin = config['buttonPin'], debounce_ms=500)
+
+    try:
+        main(motors, LineSensors, button)
+    except KeyboardInterrupt:
+        motors.off()
+        raise KeyboardInterrupt
 

@@ -2,7 +2,7 @@ from hardware.line import LineSensorArray
 from hardware.motor import Motors
 from time import sleep
 
-def check_straight_line(motors:Motors, line_sensors: LineSensorArray, offsetP, offsetS):
+def check_straight_line(line_sensors: LineSensorArray, offsetP, offsetS):
     """Drive straight while both outer line sensors detect the line."""
     line_data = line_sensors.read_all()
     p = 0 #line_data.get('p')
