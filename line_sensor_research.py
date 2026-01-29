@@ -18,7 +18,7 @@ def main(motors, LineSensors):
         sensor_data = LineSensors.read_all()
         print(
              f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
-        motors.p.forward(speed - offsetP)
+        motors.p.forward(speed - offsetP- 2)
         motors.s.forward(speed - offsetS)
         #sleep(0.01)
 

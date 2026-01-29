@@ -1,4 +1,4 @@
-from hardware.line import LineSensorArray, LineSensorArrayAlt
+from hardware.line import LineSensorArray
 from hardware.motor import Motors
 from time import sleep
 
@@ -13,22 +13,22 @@ def check_straight_line(motors:Motors, line_sensors: LineSensorArray, offsetP, o
     if (p, cp, cs, s) == (0, 1, 1, 0):
         print('Continuing straight line')
         if offsetP > 0:
-            offsetP -= 2
+            offsetP -= 5
         elif offsetP < 0:
             offsetP = 0
 
         if offsetS > 0:
-            offsetS -= 2
+            offsetS -= 5
         elif offsetS < 0:
             offsetS = 0
 
     elif ((cp == 1 or cs == 1) and (p == 1 or s == 1)):
-        print('Reached node, stopping')
-        motors.off()
+        print('Reached node')
+        #motors.off()
 
     elif (cp == 0 and cs == 0):
-        print('Lost line, stopping')
-        motors.off()
+        print('Lost line')
+        #motors.off()
 
     elif (p, cp, cs, s) == (0, 0, 1, 0):
         print('Port side lost line, attempting to correct')
@@ -38,15 +38,14 @@ def check_straight_line(motors:Motors, line_sensors: LineSensorArray, offsetP, o
 
     elif (p, cp, cs, s) == (0, 1, 0, 0):
         print('Starboard side lost line, attempting to correct')
-        motors.off()
-        offsetS += 1
-        offsetP = 0
+        offsetP += 1
+        offsetS = 0
 
-    if offsetP > 10:
-        offsetP = 10
+    if offsetP > 50:
+        offsetP = 50
 
-    if offsetS > 10:
-        offsetS = 10
+    if offsetS > 50:
+        offsetS = 50
 
     print(offsetP, offsetS)
 

@@ -11,8 +11,8 @@
   },
   "lineSensor": {
     "pinPort": 21,
-    "pinCenterPort": 20,
-    "pinCenterStarboard": 19,
+    "pinCenterPort": 19,
+    "pinCenterStarboard": 20,
     "pinStarboard": 18
   }
 }
