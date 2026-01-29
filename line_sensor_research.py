@@ -4,7 +4,24 @@ from hardware.line import LineSensorArray, LineSensorArrayAlt
 from motion.line import check_straight_line, check_straight_line_alt
 from time import sleep
 
-def main():
+def main(motors, LineSensors):
+    motors.off()
+
+    input("Press Enter to continue...")
+
+    speed = 100
+
+    while True:
+        offsetP, offsetS = check_straight_line(motors, LineSensors, t="Test 0")
+        sensor_data = LineSensors.read_all()
+        print(
+             f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
+        motors.p.forward(speed - offsetP)
+        motors.s.forward(speed - offsetS)
+        #sleep(0.01)
+
+
+if __name__ == '__main__':
     # read configuration file
     config = load_config()
 
@@ -27,31 +44,11 @@ def main():
 
     print("Line successfully initialized in configuration 0.")
 
-    motors.off()
 
-    input("Press Enter to continue...")
-
-    toggle = 0
-    while True:
-
-        # check_straight_line(motors, LineSensors, t="Test 0")
-        sensor_data = LineSensors.read_all()
-        print(
-            f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
-        sleep(0.5)
-
-
-
-
-if __name__ == '__main__':
     try:
-        main()
+        main(motors, LineSensors)
     except KeyboardInterrupt:
         config = load_config()
-        motors = Motors(pDIR=config['motor']['port']['pinDIR'],
-                        pPWM=config['motor']['port']['pinPWM'],
-                        sDIR=config['motor']['starboard']['pinDIR'],
-                        sPWM=config['motor']['starboard']['pinPWM'])
         motors.off()
-        print("Program interrupted by user.")
+        raise KeyboardInterrupt
 

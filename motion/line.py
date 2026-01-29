@@ -13,12 +13,12 @@ def check_straight_line(motors:Motors, line_sensors: LineSensorArray, offsetP:in
     if (p, cp, cs, s) == (0, 1, 1, 0):
         print(f'Continuing straight line')
         motors.forward(speed=100)
-        if offsetP !=0:
+        if offsetP > 0:
             offsetP -= 2
-        elif offsetP<0:
+        elif offsetP < 0:
             offsetP = 0
 
-        if offsetS !=0:
+        if offsetS > 0:
             offsetS -= 2
         elif offsetS < 0:
             offsetS = 0
@@ -33,7 +33,7 @@ def check_straight_line(motors:Motors, line_sensors: LineSensorArray, offsetP:in
 
     elif (p, cp, cs, s) == (0, 0, 1, 0):
         print(f'Port side lost line, attempting to correct')
-        offsetP += 0
+        offsetP = 0
         offsetS += 1
 
 
@@ -42,6 +42,12 @@ def check_straight_line(motors:Motors, line_sensors: LineSensorArray, offsetP:in
         motors.off()
         offsetS += 1
         offsetP = 0
+
+    if offsetP > 10:
+        offsetP = 10
+
+    if offsetS > 10:
+        offsetS = 10
 
     return offsetP, offsetS
 
