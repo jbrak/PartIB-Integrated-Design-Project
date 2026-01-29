@@ -27,19 +27,3 @@ class LineSensorArray:
         }
 
 
-class LineSensorArrayAlt:
-    """Line sensor array with a cross-configuration of sensors: port, front, back, starboard."""
-    def __init__(self, p, f, b, s):
-        self.p = LineSensor(p)  # port sensor
-        self.f = LineSensor(f)  # front sensor
-        self.b = LineSensor(b)  # back sensor
-        self.s = LineSensor(s)  # starboard sensor
-
-    def read_all(self):
-        return {
-            'p': self.p.read(),
-            'f': self.f.read(),
-            'b': self.b.read(),
-            's': self.s.read()
-        }
-

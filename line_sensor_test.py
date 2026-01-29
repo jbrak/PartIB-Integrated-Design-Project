@@ -20,7 +20,7 @@ def test_line_sensor():
         sensor_value_3 = line_sensor_3.read()
         sensor_value_4 = line_sensor_4.read()
         #uses serial communication to print the value
-        print("Line Sensor Value:", sensor_value_1, sensor_value_2, sensor_value_3, sensor_value_4)
+        print("Line Sensor Value:", sensor_value_4, sensor_value_2, sensor_value_3, sensor_value_1)
         sleep(1.0)
 
 test_line_sensor()

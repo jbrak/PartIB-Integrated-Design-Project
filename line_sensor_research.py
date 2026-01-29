@@ -9,61 +9,49 @@ def main():
     config = load_config()
 
     # initialize motors
-    motors = Motors(pDIR = config['motors']['port']['pinDIR'],
-                    pPWM = config['motors']['port']['pinPWM'],
-                    sDIR = config['motors']['starboard']['pinDIR'],
-                    sPWM = config['motors']['starboard']['pinPWM'])
+    motors = Motors(pDIR = config['motor']['port']['pinDIR'],
+                    pPWM = config['motor']['port']['pinPWM'],
+                    sDIR = config['motor']['starboard']['pinDIR'],
+                    sPWM = config['motor']['starboard']['pinPWM'])
 
     print("Motors successfully initialized.")
 
-
-
     # initialize line sensor array (choose configuration based on config)
     # run checking function based on configuration
-    if config['altArray'] == 0:
-        LineSensors = LineSensorArray(
-            p=config['lineSensor']['pinPort'],
-            cp=config['lineSensor']['pinCenterPort'],
-            cs=config['lineSensor']['pinCenterStarboard'],
-            s=config['lineSensor']['pinStarboard']
-        )
+    LineSensors = LineSensorArray(
+        p=config['lineSensor']['pinPort'],
+        cp=config['lineSensor']['pinCenterPort'],
+        cs=config['lineSensor']['pinCenterStarboard'],
+        s=config['lineSensor']['pinStarboard']
+    )
 
-        print("Line successfully initialized in configuration 0.")
+    print("Line successfully initialized in configuration 0.")
 
-        input("Press Enter to continue...")
+    motors.off()
 
-        motors.forward()
-        t=0
-        while True:
-            t+=1
-            check_straight_line(motors, LineSensors, t="Test 0")
-            print(LineSensors.read_all())
-            sleep(0.5)
+    input("Press Enter to continue...")
 
-    elif config['altArray'] == 1:
-        LineSensors = LineSensorArrayAlt(
-            p=config['lineSensor']['pinPort'],
-            f=config['lineSensor']['pinFront'],
-            b=config['lineSensor']['pinBack'],
-            s=config['lineSensor']['pinStarboard']
-        )
-        print("Line successfully initialized in configuration 1. (alternative)")
+    toggle = 0
+    while True:
 
-        input("Press Enter to continue...")
+        # check_straight_line(motors, LineSensors, t="Test 0")
+        sensor_data = LineSensors.read_all()
+        print(
+            f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
+        sleep(0.5)
 
-        motors.forward()
 
-        while True:
-            check_straight_line_alt(motors, LineSensors, t="Test 0")
-            print(LineSensors.read_all())
-            sleep(0.5)
-
-    else:
-        raise ValueError("Invalid altArray configuration value. Must be 0 or 1.")
 
 
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
+        config = load_config()
+        motors = Motors(pDIR=config['motor']['port']['pinDIR'],
+                        pPWM=config['motor']['port']['pinPWM'],
+                        sDIR=config['motor']['starboard']['pinDIR'],
+                        sPWM=config['motor']['starboard']['pinPWM'])
+        motors.off()
         print("Program interrupted by user.")
+

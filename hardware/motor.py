@@ -10,11 +10,11 @@ class Motor:
     def off(self):
         self.pwm.duty_u16(0)
 
-    def Forward(self, speed=100):
+    def forward(self, speed=100):
         self.mDir.value(0)  # forward = 0 reverse = 1 motor
         self.pwm.duty_u16(int(65535 * speed / 100))  # speed range 0-100 motor
 
-    def Reverse(self, speed=30):
+    def reverse(self, speed=30):
         self.mDir.value(1)
         self.pwm.duty_u16(int(65535 * speed / 100))
 
@@ -30,9 +30,9 @@ class Motors:
         self.s.off()
 
     def forward(self, speed=100):
-        self.p.Forward(speed)
-        self.s.Forward(speed)
+        self.p.forward(speed)
+        self.s.forward(speed)
 
     def reverse(self, speed=30):
-        self.p.Reverse(speed)
-        self.s.Reverse(speed)
+        self.p.reverse(speed)
+        self.s.reverse(speed)
