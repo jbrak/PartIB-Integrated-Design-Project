@@ -1,7 +1,7 @@
 from config.config import load_config
 from hardware.motor import Motors
-from hardware.line import LineSensorArray, LineSensorArrayAlt
-from motion.line import check_straight_line, check_straight_line_alt
+from hardware.line import LineSensorArray
+from motion.line import check_straight_line
 from time import sleep
 
 def main(motors, LineSensors):
@@ -10,9 +10,11 @@ def main(motors, LineSensors):
     input("Press Enter to continue...")
 
     speed = 100
+    offsetP = 0
+    offsetS = 0
 
     while True:
-        offsetP, offsetS = check_straight_line(motors, LineSensors, t="Test 0")
+        offsetP, offsetS = check_straight_line(motors, LineSensors, offsetP, offsetS)
         sensor_data = LineSensors.read_all()
         print(
              f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
