@@ -16,9 +16,9 @@ def main(motors, LineSensors, button:Button):
     # initialize offsets
     offsetP = 0
     offsetS = 0
+    node_state = 0 # 0: straight, 1: turning, 2: finishing turn
 
     while True:
-        print(button.toggle)
         if (button.toggle)%2 == 1:
             sensor_data = LineSensors.read_all()
             print(f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
@@ -28,14 +28,17 @@ def main(motors, LineSensors, button:Button):
                                                              saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
                                                              offset_step_down=config["straights"]['offset_step_down'])
-            elif node_state == 1:
-                offsetP, offsetS, node_state = turn(LineSensors, speed)
+            elif node_state != 0:
+                offsetP, offsetS, node_state = turn(LineSensors, speed, node_state)
 
             motors.p.forward(speed, offset=offsetP)
             motors.s.forward(speed, offset=offsetS)
 
+
+
         else:
             motors.off()
+        print(f"p: {offsetP},s:{offsetS}, node-state: {node_state}, toggle: {button.toggle}")
 
 if __name__ == '__main__':
     # read configuration file

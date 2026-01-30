@@ -12,10 +12,10 @@
     }
   },
   "lineSensor": {
-    "pinPort": 18,
+    "pinPort": 21,
     "pinCenterPort": 19,
     "pinCenterStarboard": 20,
-    "pinStarboard": 21
+    "pinStarboard": 18
   },
   "buttonPin": 0,
 
@@ -24,5 +24,9 @@
     "saturation": 50,
     "offset_step_up" : 1,
     "offset_step_down" : 5
+  },
+
+  "turns": {
+    "scale_factor": 0.8333
   }
 }

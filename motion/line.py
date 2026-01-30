@@ -14,19 +14,27 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, saturation=50
 
     if (p, cp, cs, s) == (0, 1, 1, 0):
         print('Continuing straight line')
-        if offsetP > 0:
-            offsetP -= offset_step_down
-        elif offsetP < 0:
-            offsetP = 0
 
-        if offsetS > 0:
-            offsetS -= offset_step_down
-        elif offsetS < 0:
-            offsetS = 0
+        offsetP =0
+        offsetS = 0
 
-    elif ((cp == 1 or cs == 1) and (p == 1 or s == 1)):
+        # if offsetP > 0:
+        #     offsetP -= offset_step_down
+        # elif offsetP < 0:
+        #     offsetP = 0
+        #
+        # if offsetS > 0:
+        #     offsetS -= offset_step_down
+        # elif offsetS < 0:
+        #     offsetS = 0
+
+    elif ((cp == 1 or cs == 1) and (p == 1)):
         print('Reached node')
         node_state = 1
+
+    elif ((cp == 1 or cs == 1) and (s == 1)):
+        print('Reached node')
+        node_state = 3
 
     elif (cp == 0 and cs == 0):
         print('Lost line')
@@ -51,7 +59,7 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, saturation=50
 
     return offsetP, offsetS, node_state
 
-def turn(line_sensors: LineSensorArray, speed):
+def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333):
     """turn at a node"""
 
     line_data = line_sensors.read_all()
@@ -60,13 +68,15 @@ def turn(line_sensors: LineSensorArray, speed):
     cs = line_data.get('cs')
     s = line_data.get('s')
 
-    if cs == 1 and cs == 0:
-        offsetP = 0
-        offsetS = 0
-        node_state = 0
+    if cs == 0 and cp == 0 and (node_state == 1 or node_state == 3):
+        offset = sf*speed
+        node_state += 1
+    elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4):
+        return 0,0,0
     else:
-        offsetP = speed / 2
-        offsetS = 0
-        node_state = 1
+        offset = sf*speed
 
-    return offsetP, offsetS, node_state
+    if node_state == 1 or node_state == 2:
+        return offset,0, node_state
+    elif node_state == 3 or node_state == 4:
+        return 0, offset, node_state
