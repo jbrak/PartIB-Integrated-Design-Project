@@ -2,7 +2,7 @@ from config.config import load_config
 from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
-from motion.line import check_straight_line
+from motion.line import straight_line, turn
 from utime import sleep
 
 def main(motors, LineSensors, button:Button):
@@ -10,19 +10,30 @@ def main(motors, LineSensors, button:Button):
 
     #input("Press Enter to continue...")
 
-    speed = 100
+    # set speed from config
+    speed = config["straights"]['speed']
+
+    # initialize offsets
     offsetP = 0
     offsetS = 0
 
     while True:
         print(button.toggle)
         if (button.toggle)%2 == 1:
-            offsetP, offsetS = check_straight_line(motors, LineSensors, offsetP, offsetS)
             sensor_data = LineSensors.read_all()
-            print(
-                 f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
+            print(f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
+
+            if node_state == 0:
+                offsetP, offsetS, node_state = straight_line(LineSensors, offsetP, offsetS,
+                                                             saturation=config["straights"]['saturation'],
+                                                             offset_step_up=config["straights"]['offset_step_up'],
+                                                             offset_step_down=config["straights"]['offset_step_down'])
+            elif node_state == 1:
+                offsetP, offsetS, node_state = turn(LineSensors, speed)
+
             motors.p.forward(speed, offset=offsetP)
             motors.s.forward(speed, offset=offsetS)
+
         else:
             motors.off()
 

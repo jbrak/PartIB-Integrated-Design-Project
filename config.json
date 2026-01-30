@@ -3,7 +3,7 @@
     "port": {
       "pinDIR": 4,
       "pinPWM": 5,
-      "driftCompensation" : 0
+      "driftCompensation" : 5
     },
     "starboard": {
       "pinDIR": 7,
@@ -17,5 +17,12 @@
     "pinCenterStarboard": 20,
     "pinStarboard": 21
   },
-  "buttonPin": 0
+  "buttonPin": 0,
+
+  "straights": {
+    "speed" : 100,
+    "saturation": 50,
+    "offset_step_up" : 1,
+    "offset_step_down" : 5
+  }
 }
