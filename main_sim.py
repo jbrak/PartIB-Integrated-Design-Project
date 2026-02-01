@@ -20,7 +20,7 @@ map = Map()
 #     Marker(7, {'s': 5, 'n': 6})
 # )
 
-s = ['n']
+s = ['n', 'e', 'e','n','n','n','n','n','n','n','n', 'w', 'w', 's','s','s','s','s','s','s','s','e','e','s']
 
 map.add(
     StartNode(1, n=2), # Start Node
@@ -59,8 +59,46 @@ map.add(
     DeadEnd(40, e=34),  # Lower Rack B, Bay 2
     DeadEnd(41, e=35),  # Lower Rack B, Bay 1
 
-    DeadEnd(49, s=16),
-    DeadEnd(50, s=35),
+    Marker(49, {'s' : 16, 'n' : 51}),
+    Marker(50, {'s' : 35, 'n' : 52}),
+
+    Corner(51, ('s','e'), s=49, e=53),
+    Corner(52, ('s','w'), s=50, w=53),
+    TJunction(53, missing='s', n=54, w=51, e=52),
+
+    TJunction(54, missing = "n", w = 55, e =56 , s = 53),
+    Corner(55, ('n', 'e'), n=63, e=54),
+    Corner(56, ('n', 'w'), n=57, w=54),
+
+    TJunction(57, missing='w', n=58, s=56, e=42),
+    TJunction(58, missing='w', n=59, s=57, e=43),
+    TJunction(59, missing='w', n=60, s=58, e=44),
+    TJunction(60, missing='w', n=61, s=59, e=45),
+    TJunction(61, missing='w', n=62, s=60, e=46),
+    TJunction(62, missing='w', n=48, s=61, e=47),
+    DeadEnd(42, w=57),  # Upper Rack A, Bay 1
+    DeadEnd(43, w=58),  # Lower Rack A, Bay 2
+    DeadEnd(44, w=59),  # Lower Rack A, Bay 3
+    DeadEnd(45, w=60),  # Lower Rack A, Bay 4
+    DeadEnd(46, w=61),  # Lower Rack A, Bay 5
+    DeadEnd(47, w=62),  # Lower Rack A, Bay 6
+
+    TJunction(63, missing='e', n=64, s=55, w=23),
+    TJunction(64, missing='e', n=65, s=63, w=24),
+    TJunction(65, missing='e', n=66, s=64, w=25),
+    TJunction(66, missing='e', n=67, s=65, w=26),
+    TJunction(67, missing='e', n=68, s=66, w=27),
+    TJunction(68, missing='e', n=29, s=67, w=28),
+    DeadEnd(23, e=63),  # Upper Rack B, Bay 1
+    DeadEnd(24, e=64),  # Lower Rack B, Bay 2
+    DeadEnd(25, e=65),  # Lower Rack B, Bay 3
+    DeadEnd(26, e=66),  # Lower Rack B, Bay 4
+    DeadEnd(27, e=67),  # Lower Rack B, Bay 5
+    DeadEnd(28, e=68),  # Lower Rack B, Bay 6
+
+    DeadEnd(48, s = 62),
+    DeadEnd(29, s = 68)
+
 )
 
 # Ensure the map is consistent
@@ -69,7 +107,7 @@ map.assert_consistent()
 robot = Robot(map, start_node_id=1, direction=s.pop(0))
 
 # Initialize the simulator
-map, robot = initialize_simulator(map, robot, LENGTH=60, start_pos=(0,-200))
+map, robot = initialize_simulator(map, robot, LENGTH=50, start_pos=(0,-400))
 
 while True:
 
@@ -83,8 +121,6 @@ while True:
         sim_turn(robot)
     else:
         sim_move(robot)
-
-
 
 # Finalize the simulator
 finalize_simulator()
