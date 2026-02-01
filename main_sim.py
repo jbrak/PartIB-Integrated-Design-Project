@@ -3,7 +3,7 @@ from map.robot import *
 from map.build_map import build_map
 import turtle as ttl
 
-s = ['n', 'e', 'e','n','n','n','n','n','n','n','n', 'w', 'w', 's','s','s','s','s','s','s','s','e','e','s']
+s = ['n','e','e','n','n','n','n','n','n','n','n', 'w', 'w', 's','s','s','s','s','s','s','s','e','e','s']
 
 map = build_map()
 
