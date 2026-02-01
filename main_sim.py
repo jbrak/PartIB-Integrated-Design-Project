@@ -64,9 +64,9 @@ map.add(
 
     Corner(51, ('s','e'), s=49, e=53),
     Corner(52, ('s','w'), s=50, w=53),
-    TJunction(53, missing='s', n=54, w=51, e=52),
+    TJunction(53, missing='s', n=54, w=51, e=52), #  change s to n
 
-    TJunction(54, missing = "n", w = 55, e =56 , s = 53),
+    TJunction(54, missing = "n", w = 55, e =56 , s = 53), # change s to n
     Corner(55, ('n', 'e'), n=63, e=54),
     Corner(56, ('n', 'w'), n=57, w=54),
 
