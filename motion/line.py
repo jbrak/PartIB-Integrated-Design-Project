@@ -1,7 +1,15 @@
 from hardware.line import LineSensorArray
 from hardware.motor import Motors
 from time import sleep
-
+"""
+Node states:
+-1 : reached node, calcualte next action
+0 : driving straight
+1 : turning port
+2 : finishing port turn
+3 : turning starboard
+4 : finishing starboard turn
+"""
 def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, saturation=50, offset_step_up=1, offset_step_down=5):
     """Drive straight while both outer line sensors detect the line."""
     line_data = line_sensors.read_all()
@@ -28,13 +36,17 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, saturation=50
         # elif offsetS < 0:
         #     offsetS = 0
 
-    elif ((cp == 1 or cs == 1) and (p == 1)):
-        print('Reached node')
-        node_state = 1
+    # elif ((cp == 1 or cs == 1) and (p == 1)):
+    #     print('Reached node')
+    #     node_state = 1
+    #
+    # elif ((cp == 1 or cs == 1) and (s == 1)):
+    #     print('Reached node')
+    #     node_state = 3
 
-    elif ((cp == 1 or cs == 1) and (s == 1)):
+    elif ((cp == 1 or cs == 1) and (p == 1 or s == 1)):
         print('Reached node')
-        node_state = 3
+        node_state = -1
 
     elif (cp == 0 and cs == 0):
         print('Lost line')
