@@ -9,14 +9,19 @@ Node states:
 2 : finishing port turn
 3 : turning starboard
 4 : finishing starboard turn
+5 : initial alignment at startup
+6: finishing initial alignment at startup
 """
-def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, saturation=50, offset_step_up=1, offset_step_down=5):
+def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading, saturation=50, offset_step_up=1, offset_step_down=5):
     """Drive straight while both outer line sensors detect the line."""
     line_data = line_sensors.read_all()
     p = line_data.get('p')
     cp = line_data.get('cp')
     cs = line_data.get('cs')
     s = line_data.get('s')
+
+    prev_p = prev_reading.get('p')
+    prev_s = prev_reading.get('s')
 
     node_state = 0
 
@@ -44,22 +49,23 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, saturation=50
     #     print('Reached node')
     #     node_state = 3
 
-    elif ((cp == 1 or cs == 1) and (p == 1 or s == 1)):
-        print('Reached node')
+    elif ((cp == 1 or cs == 1) and (p == 1 or s == 1)) and (prev_p == 0 and prev_s == 0):
+        #print('Reached node')
         node_state = -1
 
     elif (cp == 0 and cs == 0):
-        print('Lost line')
+        #print('Lost line')
         #motors.off()
+        pass
 
     elif (p, cp, cs, s) == (0, 0, 1, 0):
-        print('Port side lost line, attempting to correct')
+        #print('Port side lost line, attempting to correct')
         offsetP = 0
         offsetS += offset_step_up
 
 
     elif (p, cp, cs, s) == (0, 1, 0, 0):
-        print('Starboard side lost line, attempting to correct')
+        #print('Starboard side lost line, attempting to correct')
         offsetP += offset_step_up
         offsetS = 0
 
@@ -69,7 +75,7 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, saturation=50
     if offsetS > saturation:
         offsetS = saturation
 
-    return offsetP, offsetS, node_state
+    return offsetP, offsetS, node_state, line_data
 
 def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333):
     """turn at a node"""
@@ -92,3 +98,50 @@ def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333):
         return offset,0, node_state
     elif node_state == 3 or node_state == 4:
         return 0, offset, node_state
+
+def startup(line_sensors: LineSensorArray, node_state, prev_reading):
+    """Initial alignment at startup"""
+    line_data = line_sensors.read_all()
+    p = line_data.get('p')
+    cp = line_data.get('cp')
+    cs = line_data.get('cs')
+    s = line_data.get('s')
+
+    prev_p = prev_reading.get('p')
+    prev_s = prev_reading.get('s')
+
+    if s == 1 and p == 1 and (prev_p == 0 or prev_s == 0):
+        if node_state == 5:
+            node_state += 1
+        elif node_state == 6:
+            node_state = -1
+
+    return node_state, line_data
+
+def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf:float=0.83333):
+    """Parking maneuver at the end of the course"""
+    line_data = line_sensors.read_all()
+    p = line_data.get('p')
+    cp = line_data.get('cp')
+    cs = line_data.get('cs')
+    s = line_data.get('s')
+
+    if node_state == 7:
+        offset = sf*speed
+
+        if s ==0 and p ==0 and cp ==0 and cs ==0:
+            node_state += 1
+
+    elif node_state == 8:
+        count += 1
+        offset = (1 - sf) * speed
+
+    if count >= 2000:
+        return 0,0,0,count
+    else:
+        if direction == 'e':
+            return 0,offset, node_state, count
+        elif direction == 'w':
+            return offset, 0, node_state, count
+        else:
+            return 0,0,0,count
