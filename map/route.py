@@ -2,7 +2,7 @@ from collections import deque
 
 def route(map, start_id: int, goal_id: int):
     """
-    Finds the shortest path between two nodes in a map using breadth first search.
+    Finds the shortest path between two nodes in a map using breadth-first search.
     """
     # handle trivial case
     if start_id == goal_id:
