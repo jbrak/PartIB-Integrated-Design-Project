@@ -67,7 +67,7 @@ class DrawableMap():
             if not connected_node.position:
 
                 if connected_node.type == 'dead_end':
-                    L = LENGTH/3
+                    L = int(LENGTH/3)
                 else:
                     L = LENGTH
 
