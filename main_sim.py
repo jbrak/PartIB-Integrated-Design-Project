@@ -2,6 +2,7 @@ from simulator.draw import *
 from map.robot import *
 from map.build_map import build_map
 import turtle as ttl
+from map.route import *
 
 s = ['n','e','e','n','n','n','n','n','n','n','n', 'w', 'w', 's','s','s','s','s','s','s','s','e','e','s']
 
