@@ -126,17 +126,19 @@ def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf
     cs = line_data.get('cs')
     s = line_data.get('s')
 
+    count += 1
+
     if node_state == 7:
         offset = sf*speed
 
-        if s ==0 and p ==0 and cp ==0 and cs ==0:
+        if s ==0 and p ==0 and cp ==0 and cs ==0 and count>=2000:
             node_state += 1
+            count = 0
 
     elif node_state == 8:
-        count += 1
         offset = (1 - sf) * speed
 
-    if count >= 2000:
+    if count >= 1000 and node_state == 8:
         return 0,0,0,count
     else:
         if direction == 'e':
