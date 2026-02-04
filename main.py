@@ -80,7 +80,8 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
         else:
             motors.off()
             robot = Robot(map, start_node_id=1, direction='n')
-            sequence = copy_sequence.copy()
+            sequence = []
+            key_nodes = copy_key_nodes.copy()
             offsetP = 0
             offsetS = 0
             node_state = 5  # 0: straight, 1: turning, 2: finishing turn
