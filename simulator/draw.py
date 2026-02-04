@@ -4,6 +4,7 @@ from time import sleep
 from simulator.map import *
 from map.map import Map
 from simulator.robot import *
+
 '''python -m simulator.draw'''
 def draw_nodes(t:Turtle,start_node, end_node):
     ''' Draws a connection between two nodes on the map.'''
