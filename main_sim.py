@@ -4,7 +4,7 @@ from map.build_map import build_map
 import turtle as ttl
 from map.route import route
 
-key_nodes = [1,6,26,10,1]
+key_nodes = [1,35,15,1]
 s = ['n']
 
 map = build_map()
