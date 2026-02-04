@@ -7,8 +7,9 @@ from utime import sleep
 from map.build_map import build_map
 from map.robot import Robot
 from map.map import Map
+from map.route import route
 
-def main(motors, LineSensors, button:Button, map : Map, robot : Robot, sequence:[str]):
+def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes:[int]):
     motors.off()
 
     #input("Press Enter to continue...")
@@ -21,7 +22,8 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, sequence:
     offsetS = 0
     node_state = 5 # 0: straight, 1: turning, 2: finishing turn
     prev_reading = {'p':0, 's':0}
-    copy_sequence = sequence.copy()
+    copy_key_nodes = key_nodes.copy()
+    sequence = []
 
     while True:
         if (button.toggle)%2 == 1:
@@ -50,7 +52,9 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, sequence:
                         node_state = 1
                     else:
                         node_state = 0
-                else:
+                elif len(sequence) == 0 and len(key_nodes) > 0:
+                    sequence += route(map, robot.next_node_id, key_nodes.pop(0))[1]
+                elif len(sequence) == 0 and len(key_nodes) == 0:
                     #print("Sequence complete. Stopping robot.")
                     node_state = 7
                     count = 0
@@ -109,9 +113,7 @@ if __name__ == '__main__':
 
     map = build_map()
 
-    sequence = ['e', 'e', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'n', 'w', 'w', 's', 's', 's', 's', 's', 's', 's', 's', 'e','e']
-
-    #sequence = ['e']
+    key_nodes = [2,35,15,2]
 
     robot = Robot(map, start_node_id=1, direction='n')
 
