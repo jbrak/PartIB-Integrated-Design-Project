@@ -6,7 +6,7 @@ from motion.line import straight_line, turn, startup, parking, bay_turning
 from utime import sleep
 from map.build_map import build_map
 from map.robot import Robot
-from map.map import Map, Bay, DeadEnd
+from map.map import *
 from map.route import route
 
 def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes:[int]):
@@ -41,6 +41,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                 #     sequence = copy_sequence.copy()
 
                 if len(sequence) > 0:
+                    print("Normal Operation")
                     next_direction = sequence.pop(0)
                     turn_direction = robot.update_direction(next_direction)
                     robot.last_node_id = robot.next_node_id
@@ -56,6 +57,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                         node_state = 0
 
                 elif len(sequence) == 0 and len(key_nodes) > 0:
+                    print(robot.next_node_id, key_nodes[0])
                     sequence += route(map, robot.next_node_id, key_nodes.pop(0))[1]
                 elif len(sequence) == 0 and len(key_nodes) == 0:
                     #print("Sequence complete. Stopping robot.")
@@ -77,24 +79,24 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                                                             saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
                                                              offset_step_down=config["straights"]['offset_step_down'])
-            else:
+            elif node_state in [1,2,3,4]:
                 offsetP, offsetS, node_state = turn(LineSensors, speed, node_state)
 
             if node_state != -2:
                 if offsetP <= speed:
                     motors.p.forward(speed, offset=offsetP)
                 elif offsetP > speed:
-                    motors.p.reverse(speed, offset=offsetP-speed)
+                    motors.p.reverse(speed, offset=speed*2-offsetP)
 
                 if offsetS <= speed:
-                    motors.S.forward(speed, offset=offsetS)
-                elif offsetP > speed:
-                    motors.S.reverse(speed, offset=offsetS-speed)
+                    motors.s.forward(speed, offset=offsetS)
+                elif offsetS > speed:
+                    motors.s.reverse(speed, offset=speed*2-offsetS)
             else:
                 if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
-                    motors.toggle += 1
+                    button.toggle += 1
 
-
+            print(offsetP, offsetS, node_state)
 
         else:
             motors.off()
@@ -133,7 +135,7 @@ if __name__ == '__main__':
 
     map = build_map()
 
-    key_nodes = [2,35,15,2]
+    key_nodes = [2,35,16,2]
 
     robot = Robot(map, start_node_id=1, direction='n')
 

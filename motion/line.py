@@ -93,7 +93,7 @@ def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333):
     if cs == 0 and cp == 0 and (node_state == 1 or node_state == 3):
         offset = sf*speed
         node_state += 1
-    elif cs == 1 and cp == 1 and s == 0 and p == 0 and (node_state == 2 or node_state == 4):
+    elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4): #s == 0 and p == 0
         return 0,0,0
     else:
         offset = sf*speed
@@ -140,7 +140,7 @@ def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf
             count = 0
 
     elif node_state == 8:
-        offset = (1 - sf) * speed
+        offset = 0 #(1 - sf) * speed
 
     if count >= 1000 and node_state == 8:
         return 0,0,0,count
@@ -167,19 +167,20 @@ def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, directi
     offsetS = 0
 
     if node_state == 9:
-        offsetP, offsetS, node_state_temp, line_data = straight_line(line_sensors, offsetP, offsetS,  prev_reading, node_state, saturation, offset_step_up, offset_step_down)
+        offsetP, offsetS, node_state_temp, line_data = straight_line(line_sensors, offsetP, offsetS,  prev_reading, saturation, offset_step_up, offset_step_down)
 
-        node_state -= node_state_temp
+        if node_state_temp == -1:
+            node_state += 1
 
     elif node_state == 10:
 
         if cs == 1 and cp == 1 and (prev_cp == 0 or prev_cs == 0):
             node_state = 0
 
-        if direction == 'e':
+        if direction == 'w':
             offsetP = speed*2
             offsetS = 0
-        elif direction == 'w':
+        elif direction == 'e':
             offsetP = 0
             offsetS = speed*2
 

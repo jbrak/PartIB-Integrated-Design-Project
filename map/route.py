@@ -9,7 +9,7 @@ def route(map, start_id: int, goal_id: int):
         return [start_id], []
 
     # queue holds nodes to explore, use a queue so that we can have O(1) pops from left
-    q = deque([start_id])
+    q = [start_id]
 
     # parent[node] = previous node on shortest path
     parent = {start_id: None}
@@ -19,7 +19,7 @@ def route(map, start_id: int, goal_id: int):
 
     while q:
         # get current node to explore
-        current_id = q.popleft()
+        current_id = q.pop(0)
 
         # get current node
         current_node = map.nodes[current_id]
