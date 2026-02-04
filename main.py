@@ -2,11 +2,11 @@ from config.config import load_config
 from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
-from motion.line import straight_line, turn, startup, parking
+from motion.line import straight_line, turn, startup, parking, bay_turning
 from utime import sleep
 from map.build_map import build_map
 from map.robot import Robot
-from map.map import Map
+from map.map import Map, Bay, DeadEnd
 from map.route import route
 
 def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes:[int]):
@@ -46,12 +46,15 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                     robot.last_node_id = robot.next_node_id
                     robot.next_node_id = map.nodes.get(robot.next_node_id).connections.get(next_direction)
 
-                    if turn_direction == 's':
+                    if type(map.nodes.get(robot.last_node_id)) == Bay and turn_direction in ['s','p']:
+                        node_state = 9
+                    elif turn_direction == 's':
                         node_state = 3
                     elif turn_direction == 'p':
                         node_state = 1
                     else:
                         node_state = 0
+
                 elif len(sequence) == 0 and len(key_nodes) > 0:
                     sequence += route(map, robot.next_node_id, key_nodes.pop(0))[1]
                 elif len(sequence) == 0 and len(key_nodes) == 0:
@@ -69,11 +72,27 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                 if node_state == 0:
                     #print("Toggle Button")
                     button.toggle += 1
+            elif node_state == 9 or node_state==10:
+                offsetP, offsetS, node_state, prev_reading = bay_turning(line_sensors=LineSensors, prev_reading=prev_reading, node_state = node_state, direction= robot.direction, speed = speed,
+                                                            saturation=config["straights"]['saturation'],
+                                                             offset_step_up=config["straights"]['offset_step_up'],
+                                                             offset_step_down=config["straights"]['offset_step_down'])
             else:
                 offsetP, offsetS, node_state = turn(LineSensors, speed, node_state)
 
-            motors.p.forward(speed, offset=offsetP)
-            motors.s.forward(speed, offset=offsetS)
+            if node_state != -2:
+                if offsetP <= speed:
+                    motors.p.forward(speed, offset=offsetP)
+                elif offsetP > speed:
+                    motors.p.reverse(speed, offset=offsetP-speed)
+
+                if offsetS <= speed:
+                    motors.S.forward(speed, offset=offsetS)
+                elif offsetP > speed:
+                    motors.S.reverse(speed, offset=offsetS-speed)
+            else:
+                if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
+                    motors.toggle += 1
 
 
 
@@ -123,7 +142,7 @@ if __name__ == '__main__':
     button = Button(pin = config['buttonPin'], debounce_ms=500)
 
     try:
-        main(motors, LineSensors, button, map, robot, sequence)
+        main(motors, LineSensors, button, map, robot, key_nodes)
     except KeyboardInterrupt:
         motors.off()
         raise KeyboardInterrupt

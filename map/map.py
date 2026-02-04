@@ -57,6 +57,12 @@ class TJunction(Node):
         self.type = 't_junction'
         self.missing = missing
 
+class Bay(TJunction):
+    ''' Represents a bay node in the map'''
+    def __init__(self, id, missing: str, *, n=None, s=None, e=None, w=None):
+        ''' Initializes a bay with one missing connection.'''
+        super().__init__(id, missing, n=n, s=s, e=e, w=w)
+
 class PlusJunction(Node):
     ''' Represents a junction node in the map with all four connections.'''
     def __init__(self, id, *, n:int, s:int, e:int, w:int):
