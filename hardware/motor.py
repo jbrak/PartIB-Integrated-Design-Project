@@ -38,3 +38,13 @@ class Motors:
     def reverse(self, speed=30):
         self.p.reverse(speed)
         self.s.reverse(speed)
+
+if __name__ == "__main__":
+    motors = Motors(pDIR=4, pPWM=5, sDIR=7, sPWM=6, pdrift_compensation=0, sdrift_compensation=0)
+    try:
+        while True:
+            speed = int(input("Enter speed: "))
+
+            motors.forward(speed)
+    except KeyboardInterrupt:
+        motors.off()

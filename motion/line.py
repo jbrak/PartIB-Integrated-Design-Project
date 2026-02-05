@@ -90,10 +90,10 @@ def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333):
     cs = line_data.get('cs')
     s = line_data.get('s')
 
-    if cs == 0 and cp == 0 and (node_state == 1 or node_state == 3):
+    if (cs == 0 or cp == 0) and (node_state == 1 or node_state == 3):
         offset = sf*speed
         node_state += 1
-    elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4): #s == 0 and p == 0
+    elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4) and (s == 0 and p == 0):
         return 0,0,0
     else:
         offset = sf*speed
@@ -113,8 +113,10 @@ def startup(line_sensors: LineSensorArray, node_state, prev_reading):
 
     prev_p = prev_reading.get('p')
     prev_s = prev_reading.get('s')
+    prev_cp = prev_reading.get('cp')
+    prev_cs = prev_reading.get('cs')
 
-    if s == 1 and p == 1 and (prev_p == 0 or prev_s == 0):
+    if ((cs == 1 and p == 1) and (prev_cs ==0 or prev_p == 0)):
         if node_state == 5:
             node_state += 1
         elif node_state == 6:
@@ -135,7 +137,7 @@ def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf
     if node_state == 7:
         offset = sf*speed
 
-        if s ==0 and p ==0 and cp ==0 and cs ==0 and count>=2000:
+        if s ==0 and p ==0 and cp ==0 and cs ==0 and count>=1550:
             node_state += 1
             count = 0
 

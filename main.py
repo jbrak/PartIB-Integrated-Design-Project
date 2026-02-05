@@ -69,7 +69,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
             elif node_state == 7 or node_state == 8:
                 #print("node_state:", node_state)
                 #print("count:", count)
-                offsetP, offsetS, node_state, count = parking(LineSensors, speed, node_state, robot.direction, count)
+                offsetP, offsetS, node_state, count = parking(LineSensors, speed, node_state, robot.direction, count, sf=config["turns"]["scale_factor"])
 
                 if node_state == 0:
                     #print("Toggle Button")
@@ -80,7 +80,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                                                              offset_step_up=config["straights"]['offset_step_up'],
                                                              offset_step_down=config["straights"]['offset_step_down'])
             elif node_state in [1,2,3,4]:
-                offsetP, offsetS, node_state = turn(LineSensors, speed, node_state)
+                offsetP, offsetS, node_state = turn(LineSensors, speed, node_state, sf = config["turns"]["scale_factor"])
 
             if node_state != -2:
                 if offsetP <= speed:
@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
     map = build_map()
 
-    key_nodes = [2,35,16,2]
+    key_nodes = [2,25]
 
     robot = Robot(map, start_node_id=1, direction='n')
 
