@@ -2,7 +2,7 @@ from config.config import load_config
 from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
-from motion.line import straight_line, turn, startup, parking, bay_turning
+from motion.line import straight_line, turn, startup, parking, bay_turning, reverse
 from utime import sleep
 from map.build_map import build_map
 from map.robot import Robot
@@ -49,6 +49,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
 
                     if type(map.nodes.get(robot.last_node_id)) == Bay and turn_direction in ['s','p']:
                         node_state = 9
+                        count = 0
                     elif turn_direction == 's':
                         node_state = 3
                     elif turn_direction == 'p':
@@ -75,28 +76,46 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                     #print("Toggle Button")
                     button.toggle += 1
             elif node_state == 9 or node_state==10:
-                offsetP, offsetS, node_state, prev_reading = bay_turning(line_sensors=LineSensors, prev_reading=prev_reading, node_state = node_state, direction= robot.direction, speed = speed,
+                offsetP, offsetS, node_state, prev_reading, count = bay_turning(line_sensors=LineSensors, prev_reading=prev_reading, node_state = node_state, direction= robot.direction, speed = speed,
                                                             saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
-                                                             offset_step_down=config["straights"]['offset_step_down'])
+                                                             offset_step_down=config["straights"]['offset_step_down'], count = count)
+                print(count)
             elif node_state in [1,2,3,4]:
                 offsetP, offsetS, node_state = turn(LineSensors, speed, node_state, sf = config["turns"]["scale_factor"])
+            elif node_state == 11 and type(map.nodes.get(robot.next_node_id)) == DeadEnd:
+                offsetP, offsetS, node_state, prev_reading = reverse(LineSensors, offsetP, offsetS, prev_reading, speed=speed,
+                                                             saturation=config["straights"]['saturation'],
+                                                             offset_step_up=config["straights"]['offset_step_up'],
+                                                             offset_step_down=config["straights"]['offset_step_down'])
+
+                if node_state == -1:
+                    robot.next_node_id = robot.last_node_id
 
             if node_state != -2:
                 if offsetP <= speed:
                     motors.p.forward(speed, offset=offsetP)
+                elif offsetP == 3*speed:
+                    motors.p.off()
                 elif offsetP > speed:
-                    motors.p.reverse(speed, offset=speed*2-offsetP)
+                    motors.p.reverse(speed, offset=(speed*2-offsetP))
+
 
                 if offsetS <= speed:
                     motors.s.forward(speed, offset=offsetS)
+                elif offsetS == 3*speed:
+                    motors.s.off()
                 elif offsetS > speed:
-                    motors.s.reverse(speed, offset=speed*2-offsetS)
+                    motors.s.reverse(speed, offset=(speed*2-offsetS))
+
             else:
                 if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
-                    button.toggle += 1
+                    node_state = 11
 
             print(offsetP, offsetS, node_state)
+
+            if offsetS == 3*speed and offsetP == 3*speed:
+                sleep(1)
 
         else:
             motors.off()
@@ -135,7 +154,7 @@ if __name__ == '__main__':
 
     map = build_map()
 
-    key_nodes = [2,25]
+    key_nodes = [2,36,2]
 
     robot = Robot(map, start_node_id=1, direction='n')
 
