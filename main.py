@@ -9,6 +9,15 @@ from map.robot import Robot
 from map.map import *
 from map.route import route
 
+"""
+status:
+101: Initializing, detecting empty spaces
+102: picking up coil, measure resistance
+103: dropping off coil in relevent bay
+104: going home
+"""
+
+
 def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes:[int]):
     motors.off()
 
@@ -25,6 +34,9 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
     copy_key_nodes = key_nodes.copy()
     sequence = []
     pause_count = 0
+    status = 101
+
+
 
     while True:
         if (button.toggle)%2 == 1:

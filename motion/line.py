@@ -217,3 +217,6 @@ def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed,
         node_state = 11
 
     return (2*speed-offsetS), (2*speed-offsetP), node_state, line_data
+
+def pause(pause_count, node_state, status):
+    """Pause the robot for a specified number of cycles"""
