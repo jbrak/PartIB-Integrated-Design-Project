@@ -21,6 +21,7 @@ while True:
 
     if sim_check_node(robot, map):
         if len(s) == 0 and len(key_nodes) > 0:
+
             s += route(map, robot.next_node_id, key_nodes.pop(0))[1]
             print("New route:", s)
         elif len(s) == 0 and len(key_nodes) == 0:

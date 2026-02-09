@@ -58,7 +58,6 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                         node_state = 0
 
                 elif len(sequence) == 0 and len(key_nodes) > 0:
-                    print(robot.next_node_id, key_nodes[0])
                     sequence += route(map, robot.next_node_id, key_nodes.pop(0))[1]
                 elif len(sequence) == 0 and len(key_nodes) == 0:
                     #print("Sequence complete. Stopping robot.")
