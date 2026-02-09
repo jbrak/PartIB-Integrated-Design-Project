@@ -24,6 +24,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
     prev_reading = {'p':0, 's':0}
     copy_key_nodes = key_nodes.copy()
     sequence = []
+    pause_count = 0
 
     while True:
         if (button.toggle)%2 == 1:
@@ -31,7 +32,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
             #print(f"left: {sensor_data['p']}, center-left: {sensor_data['cp']}, center-right: {sensor_data['cs']}, right: {sensor_data['s']}")
 
             if node_state == 0:
-                offsetP, offsetS, node_state, prev_reading = straight_line(LineSensors, offsetP, offsetS, prev_reading,
+                offsetP, offsetS, node_state, prev_reading, pause_count = straight_line(LineSensors, offsetP, offsetS, prev_reading,pause_count,
                                                              saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
                                                              offset_step_down=config["straights"]['offset_step_down'])
@@ -75,10 +76,10 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                     #print("Toggle Button")
                     button.toggle += 1
             elif node_state == 9 or node_state==10:
-                offsetP, offsetS, node_state, prev_reading, count = bay_turning(line_sensors=LineSensors, prev_reading=prev_reading, node_state = node_state, direction= robot.direction, speed = speed,
+                offsetP, offsetS, node_state, prev_reading, count, pause_count = bay_turning(line_sensors=LineSensors, prev_reading=prev_reading, node_state = node_state, direction= robot.direction, speed = speed,
                                                             saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
-                                                             offset_step_down=config["straights"]['offset_step_down'], count = count)
+                                                             offset_step_down=config["straights"]['offset_step_down'], count = count, pause_count=pause_count)
                 print(count)
             elif node_state in [1,2,3,4]:
                 offsetP, offsetS, node_state = turn(LineSensors, speed, node_state, sf = config["turns"]["scale_factor"])
@@ -91,11 +92,11 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                 if node_state == -1:
                     robot.next_node_id = robot.last_node_id
 
-            if node_state != -2:
+            if pause_count == 0:
                 if offsetP <= speed:
                     motors.p.forward(speed, offset=offsetP)
                 elif offsetP == 3*speed:
-                    motors.p.off()
+                    motors.s.off()
                 elif offsetP > speed:
                     motors.p.reverse(speed, offset=(speed*2-offsetP))
 
@@ -108,13 +109,14 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                     motors.s.reverse(speed, offset=(speed*2-offsetS))
 
             else:
+                motors.p.off()
+                motors.s.off()
+                pause_count -= 1
                 if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
                     node_state = 11
 
-            print(offsetP, offsetS, node_state)
 
-            if offsetS == 3*speed and offsetP == 3*speed:
-                sleep(1)
+            print(offsetP, offsetS, node_state)
 
         else:
             motors.off()
