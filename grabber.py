@@ -5,12 +5,17 @@ class Servo:
 
     # Lets you control the servos easily
     
-    def __init__(self, pin, freq, offset=2621, multiplier=50):
+    def __init__(self, pin, freq, offset=2621, multiplier=50, calibrated=False):
         self.pwm = PWM(Pin(pin), freq)
         self.offset = int(offset) # offset for the PWM's 0 state
         self.duty_u16 = int(offset) # holds the PWM's duty cycle (starts at offset or 0 state)
         self.multiplier = multiplier # multiplier for angle -> u16 conversion
+        if calibrated:
+            self.duty_u16 = self.pwm.duty_u16()
+        else:
+            self.duty_u16 = int(offset)
         self.zero_degrees()
+            
     
     def zero_degrees(self): # Sets the Servo to its 0 state
         self.pwm.duty_u16(self.offset)
@@ -27,7 +32,7 @@ class Servo:
         
         self.duty_u16 = int(self.duty_u16)
 
-grabber = Servo(15, 100)
+grabber = Servo(15, 100, calibrated=True)
 lifter = Servo(13, 100)
 
 def do_pwm():
@@ -83,5 +88,7 @@ def lift():
     lifter.turn(20, 500)
 
 if __name__ == "__main__":
-    grab()
-    lift()
+    #grab()
+    #sleep(3)
+    #lift()
+    pass
