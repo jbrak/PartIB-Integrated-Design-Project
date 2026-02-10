@@ -15,6 +15,8 @@ class Robot:
 
         turn = direction_map[self.direction][next_direction]
 
-        self.direction = next_direction
+        if turn != 'b':
+            self.direction = next_direction
+
         return turn
 

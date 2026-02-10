@@ -3,6 +3,7 @@ from hardware.motor import Motors
 from time import sleep
 """
 Node states:
+-2 : lost line, proceed with next action
 -1 : reached node, calculate next action
 0 : driving straight
 1 : turning port
@@ -61,7 +62,7 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
     elif (cp == 0 and cs == 0):
         #print('Lost line')
         #motors.off()
-        return 0 ,0 ,-1, line_data, 100
+        return 0 ,0 ,-2, line_data, 100
 
     elif (p, cp, cs, s) == (0, 0, 1, 0):
         #print('Port side lost line, attempting to correct')
@@ -217,6 +218,3 @@ def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed,
         node_state = 11
 
     return (2*speed-offsetS), (2*speed-offsetP), node_state, line_data
-
-def pause(pause_count, node_state, status):
-    """Pause the robot for a specified number of cycles"""

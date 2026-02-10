@@ -2,12 +2,14 @@ from config.config import load_config
 from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
+from hardware.grabber import Servo
 from motion.line import straight_line, turn, startup, parking, bay_turning, reverse
+from motion.pathfinding import *
 from time import sleep
 from map.build_map import build_map
 from map.robot import Robot
 from map.map import *
-from map.route import route
+from machine import Pin
 
 """
 status:
@@ -18,7 +20,7 @@ status:
 """
 
 
-def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes: list[int]):
+def main(motors, LineSensors, button:Button, map : Map, robot : Robot):
     motors.off()
 
     #input("Press Enter to continue...")
@@ -31,12 +33,15 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
     offsetS = 0
     node_state = 5 # 0: straight, 1: turning, 2: finishing turn
     prev_reading = {'p':0, 's':0}
-    copy_key_nodes = key_nodes.copy()
     sequence = []
     pause_count = 0
     status = 101
+    key_nodes = KeyNodes()
 
-
+    for i in key_nodes.led_pin_lookup.values():
+        Pin(i, Pin.OUT).value(1)
+        sleep(0.5)
+        Pin(i, Pin.OUT).value(0)
 
     while True:
         if (button.toggle)%2 == 1:
@@ -67,15 +72,19 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                         node_state = 3
                     elif turn_direction == 'p':
                         node_state = 1
+                    elif turn_direction == "b":
+                        node_state = 11
                     else:
                         node_state = 0
 
-                elif len(sequence) == 0 and len(key_nodes) > 0:
-                    sequence += route(map, robot.next_node_id, key_nodes.pop(0))[1]
-                elif len(sequence) == 0 and len(key_nodes) == 0:
-                    #print("Sequence complete. Stopping robot.")
+                elif len(sequence) == 0 and status == 105:
                     node_state = 7
                     count = 0
+
+                elif len(sequence) == 0:
+                    #print("Sequence complete. Stopping robot.")
+                    sequence, status, pause_count = next_node(map, status, pause_count, robot.next_node_id, key_nodes)
+
 
             elif node_state == 5 or node_state == 6:
                 node_state, prev_reading = startup(LineSensors, node_state, prev_reading)
@@ -101,8 +110,6 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                                                              offset_step_up=config["straights"]['offset_step_up'],
                                                              offset_step_down=config["straights"]['offset_step_down'])
 
-                if node_state == -1:
-                    robot.next_node_id = robot.last_node_id
 
             if pause_count == 0:
                 if offsetP <= speed:
@@ -124,11 +131,17 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                 motors.p.off()
                 motors.s.off()
                 pause_count -= 1
-                
-                ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
-                #if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
-                #    node_state = 11
 
+                if status == 102:
+                    ## Code for picking up coil
+                    pass
+                elif status == 104:
+                    ## Code for releasing coil
+                    pass
+
+                ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
+                if type(map.nodes.get(robot.next_node_id)) == DeadEnd and node_state == -2:
+                    node_state = -1
 
             print(offsetP, offsetS, node_state)
 
@@ -136,11 +149,12 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
             motors.off()
             robot = Robot(map, start_node_id=1, direction='n')
             sequence = []
-            key_nodes = copy_key_nodes.copy()
+            status = 101
             offsetP = 0
             offsetS = 0
             node_state = 5  # 0: straight, 1: turning, 2: finishing turn
             prev_reading = {'p': 0, 's': 0}
+            key_nodes = KeyNodes()
 
         #print(f"p: {offsetP},s:{offsetS}, node-state: {node_state}, toggle: {button.toggle}")
 
@@ -156,7 +170,8 @@ if __name__ == '__main__':
                     sdrift_compensation=config['motor']['starboard']['driftCompensation'],
                     pdrift_compensation=config['motor']['port']['driftCompensation'])
 
-    print("Motors successfully initialized.")
+    grabber = Servo(15, 100)
+    lifter = Servo(13, 100)
 
     # initialize line sensor array (choose configuration based on config)
     # run checking function based on configuration
@@ -169,8 +184,6 @@ if __name__ == '__main__':
 
     map = build_map()
 
-    key_nodes = [2,36,2]
-
     robot = Robot(map, start_node_id=1, direction='n')
 
     print("Line successfully initialized in configuration 0.")
@@ -178,7 +191,7 @@ if __name__ == '__main__':
     button = Button(pin = config['buttonPin'], debounce_ms=500)
 
     try:
-        main(motors, LineSensors, button, map, robot, key_nodes)
+        main(motors, LineSensors, button, map, robot)
     except KeyboardInterrupt:
         motors.off()
         raise KeyboardInterrupt
