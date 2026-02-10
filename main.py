@@ -3,7 +3,7 @@ from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
 from motion.line import straight_line, turn, startup, parking, bay_turning, reverse
-from utime import sleep
+from time import sleep
 from map.build_map import build_map
 from map.robot import Robot
 from map.map import *
@@ -18,7 +18,7 @@ status:
 """
 
 
-def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes:[int]):
+def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes: list[int]):
     motors.off()
 
     #input("Press Enter to continue...")
@@ -124,8 +124,10 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, key_nodes
                 motors.p.off()
                 motors.s.off()
                 pause_count -= 1
-                if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
-                    node_state = 11
+                
+                ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
+                #if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
+                #    node_state = 11
 
 
             print(offsetP, offsetS, node_state)
