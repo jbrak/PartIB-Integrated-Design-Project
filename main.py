@@ -3,6 +3,7 @@ from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
 from hardware.grabber import Servo
+from hardware.box import Upper, Lower
 from motion.line import straight_line, turn, startup, parking, bay_turning, reverse
 from motion.pathfinding import *
 from time import sleep
@@ -20,7 +21,7 @@ status:
 """
 
 
-def main(motors, LineSensors, button:Button, map : Map, robot : Robot):
+def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : Upper, lower : Lower):
     motors.off()
 
     #input("Press Enter to continue...")
@@ -83,7 +84,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot):
 
                 elif len(sequence) == 0:
                     #print("Sequence complete. Stopping robot.")
-                    sequence, status, pause_count = next_node(map, status, pause_count, robot.next_node_id, key_nodes)
+                    sequence, status, pause_count = next_node(map, status, pause_count, robot.next_node_id, key_nodes, upper, lower)
 
 
             elif node_state == 5 or node_state == 6:
@@ -182,6 +183,9 @@ if __name__ == '__main__':
         s=config['lineSensor']['pinStarboard']
     )
 
+    upper = Upper(sda = config['box']['upper']['sda'], scl = config['box']['upper']['scl'])
+    lower = Lower(sda = config['box']['lower']['sda'], scl = config['box']['lower']['scl'])
+
     map = build_map()
 
     robot = Robot(map, start_node_id=1, direction='n')
@@ -191,7 +195,7 @@ if __name__ == '__main__':
     button = Button(pin = config['buttonPin'], debounce_ms=500)
 
     try:
-        main(motors, LineSensors, button, map, robot)
+        main(motors, LineSensors, button, map, robot, upper, lower)
     except KeyboardInterrupt:
         motors.off()
         raise KeyboardInterrupt

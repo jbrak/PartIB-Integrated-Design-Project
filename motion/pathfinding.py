@@ -1,6 +1,7 @@
 from map.map import *
 from map.route import *
 from machine import Pin, ADC
+from hardware.box import Upper, Lower
 
 class KeyNodes:
     def __init__(self, map):
@@ -15,7 +16,7 @@ class KeyNodes:
         self.led_pin_lookup = {"r1": 10, "r2": 11, "r3": 12, "r4": 14}
 
 
-def next_node(map, status, pause_count, current_node_id, key_nodes):
+def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper, lower:Lower):
 
     sequence = []
 
@@ -23,9 +24,9 @@ def next_node(map, status, pause_count, current_node_id, key_nodes):
         
         #Scanning the bay
         if len(key_nodes.bays_searched["r3"])>0:
-            pause_count = check_bay(["r3","r4"],key_nodes.bays_searched["r3"][-1],key_nodes.bays_searched["r4"][-1],pause_count,key_nodes)
+            pause_count = check_bay(["r3","r4"],key_nodes.bays_searched["r3"][-1],key_nodes.bays_searched["r4"][-1],pause_count,key_nodes, upper = upper, lower = lower)
         elif len(key_nodes.bays_searched["r1"])>0:
-            pause_count = check_bay(["r1","r2"],key_nodes.bays_searched["r1"][-1],key_nodes.bays_searched["r2"][-1],pause_count,key_nodes)
+            pause_count = check_bay(["r1","r2"],key_nodes.bays_searched["r1"][-1],key_nodes.bays_searched["r2"][-1],pause_count,key_nodes, upper = upper, lower = lower)
 
 
         #Selects the next bay to go to
@@ -117,15 +118,15 @@ def next_node(map, status, pause_count, current_node_id, key_nodes):
 
     return sequence,status, pause_count
 
-def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes):
+def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper:Upper, lower:Lower):
     #Algorithm with sensors to check bays here
     if pause_count == 0:
         pause_count = 100
 
     if pause_count > 1:
         #Check with sensors top_reading, bottom_reading
-        bottom_reading = 150
-        top_reading= 50
+        bottom_reading = lower.get_distance()
+        top_reading= upper.get_distance()
         
 
         key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] += bottom_reading
