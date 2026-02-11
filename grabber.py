@@ -4,14 +4,14 @@ from utime import sleep
 class Servo:
 
     # Lets you control the servos easily
-    
-    def __init__(self, pin, freq):
+    def __init__(self, pin, freq, offset=0, maximum=20000):
         self.pwm = PWM(Pin(pin), freq)
-        self.multiplier = 50 # multiplier for angle -> u16 conversion. Tested angle, accurate enough
+        self.multiplier = 47.8 # multiplier for angle -> u16 conversion. Tested angle, accurate enough
+        self.offset = int(offset)
+        self.maximum = int(maximum)
+        self.zero_degrees()
         self.duty_u16 = self.pwm.duty_u16()
-        self.offset = self.duty_u16
-            
-    
+        
     def zero_degrees(self): # Sets the Servo to its 0 state
         self.pwm.duty_u16(self.offset)
 
@@ -22,6 +22,14 @@ class Servo:
         #  just in case you don't want to fling something
         for _ in range(t_ms):
             self.duty_u16 += (angle * self.multiplier / t_ms)
+            if self.duty_u16 < self.offset:
+                self.duty_u16 = self.offset
+                print("Cannot turn anymore, preceeding offset")
+                break
+            if self.duty_u16 > self.maximum:
+                self.duty_u16 = self.maximum
+                print("Cannot turn anymore, exceeding maximum")
+                break
             self.pwm.duty_u16(int(self.duty_u16))
             sleep(0.001)
         
@@ -31,8 +39,8 @@ class Servo:
         self.duty_u16 += int(cycle)
         self.pwm.duty_u16(self.duty_u16)
 
-grabber = Servo(15, 100) # Servo 1
-lifter = Servo(13, 100) # Servo 2
+grabber = Servo(15, 100, 2400, 15000) # Servo 1, limits are the absolute limits of the servo
+lifter = Servo(13, 100, 2500, 6000) # Servo 2, limits around correct
 
 def grab():
     grabber.turn_angle(30)
@@ -78,12 +86,14 @@ def calibrate(servo):
     print("Your zero is: ", servo.duty_u16)
     print("Set this as your offset for this servo")
     
+def turn(servo):
+    x = ""
+    while x == "":
+        servo.turn_duty(20)
+        print(servo.duty_u16)
+        sleep(0.1)
+    
 
 if __name__ == "__main__":
-    print(grabber.pwm.duty_u16())
-    print(grabber.duty_u16)
-    grabber.turn_duty(4000)
-    sleep(1)
-    grabber.turn_angle(-270, 1000)
-    print(grabber.pwm.duty_u16())
+    turn(lifter)
     
