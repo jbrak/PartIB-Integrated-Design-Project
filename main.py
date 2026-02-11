@@ -38,6 +38,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
     pause_count = 0
     status = 101
     key_nodes = KeyNodes()
+    turn_count = 0
 
     for i in key_nodes.led_pin_lookup.values():
         Pin(i, Pin.OUT).value(1)
@@ -60,23 +61,33 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                 #     sequence = copy_sequence.copy()
 
                 if len(sequence) > 0:
-                    print("Normal Operation")
                     next_direction = sequence.pop(0)
                     turn_direction = robot.update_direction(next_direction)
                     robot.last_node_id = robot.next_node_id
                     robot.next_node_id = map.nodes.get(robot.next_node_id).connections.get(next_direction)
 
-                    if type(map.nodes.get(robot.last_node_id)) == Bay and turn_direction in ['s','p']:
+                    if type(map.nodes.get(robot.last_node_id)) == Bay and turn_direction in ['s','p'] and robot.direction in ['w', 'e']:
                         node_state = 9
                         count = 0
+                        turn_count = 500
                     elif turn_direction == 's':
+                        turn_count = 1300
                         node_state = 3
                     elif turn_direction == 'p':
+                        turn_count = 1300
                         node_state = 1
-                    elif turn_direction == "b":
+                    elif turn_direction == 'b':
                         node_state = 11
+                        count = 0
                     else:
                         node_state = 0
+
+                    print(turn_direction)
+                    print("NODE STATE",node_state)
+                    print(robot.direction)
+                    print("prev:", robot.next_node_id)
+                    print("next:", robot.last_node_id)
+                    print(sequence)
 
                 elif len(sequence) == 0 and status == 105:
                     node_state = 7
@@ -85,6 +96,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                 elif len(sequence) == 0:
                     #print("Sequence complete. Stopping robot.")
                     sequence, status, pause_count = next_node(map, status, pause_count, robot.next_node_id, key_nodes, upper, lower)
+                    print(robot.direction)
 
 
             elif node_state == 5 or node_state == 6:
@@ -98,19 +110,47 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                     #print("Toggle Button")
                     button.toggle += 1
             elif node_state == 9 or node_state==10:
-                offsetP, offsetS, node_state, prev_reading, count, pause_count = bay_turning(line_sensors=LineSensors, prev_reading=prev_reading, node_state = node_state, direction= robot.direction, speed = speed,
+                offsetP, offsetS, node_state, prev_reading, count, pause_count, turn_count = bay_turning(line_sensors=LineSensors, prev_reading=prev_reading, node_state = node_state, direction= robot.direction, speed = speed,
                                                             saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
-                                                             offset_step_down=config["straights"]['offset_step_down'], count = count, pause_count=pause_count)
-                print(count)
+                                                             offset_step_down=config["straights"]['offset_step_down'], count = count, pause_count=pause_count, turn_count=turn_count)
+                #print(count)
             elif node_state in [1,2,3,4]:
-                offsetP, offsetS, node_state = turn(LineSensors, speed, node_state, sf = config["turns"]["scale_factor"])
-            elif node_state == 11 and type(map.nodes.get(robot.next_node_id)) == DeadEnd:
-                offsetP, offsetS, node_state, prev_reading = reverse(LineSensors, offsetP, offsetS, prev_reading, speed=speed,
+                offsetP, offsetS, node_state, turn_count = turn(LineSensors, speed, node_state, sf = config["turns"]["scale_factor"], turn_count = turn_count)
+
+            elif (node_state == 11):
+                if type(map.nodes.get(robot.last_node_id)) == DeadEnd:
+                    offsetP, offsetS, node_state, prev_reading, pause_count = reverse(LineSensors, offsetP, offsetS, prev_reading, speed=speed,
                                                              saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
-                                                             offset_step_down=config["straights"]['offset_step_down'])
+                                                             offset_step_down=config["straights"]['offset_step_down'], pause_count=pause_count)
 
+                else:
+
+                    current_node = map.nodes.get(robot.last_node_id)
+
+                    for i in current_node.connections.keys():
+                        if i not in ['n', 's']:
+                            direction_temp = i
+
+                    turn_count = 0
+
+                    offsetP, offsetS, node_state, prev_reading, count, pause_count, turn_count = bay_turning(
+                        line_sensors=LineSensors, prev_reading=prev_reading, node_state=10,
+                        direction=direction_temp, speed=speed,
+                        saturation=config["straights"]['saturation'],
+                        offset_step_up=config["straights"]['offset_step_up'],
+                        offset_step_down=config["straights"]['offset_step_down'], count = count, pause_count=pause_count, turn_count=turn_count)
+
+                    if node_state == 10:
+                        node_state = 11
+                    else:
+                        if robot.direction == 's':
+                            robot.direction = 'n'
+                        else:
+                            robot.direction = 's'
+
+                    offsetS, offsetP = offsetP, offsetS
 
             if pause_count == 0:
                 if offsetP <= speed:
@@ -144,16 +184,16 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                 if type(map.nodes.get(robot.next_node_id)) == DeadEnd and node_state == -2:
                     node_state = -1
 
-            print(offsetP, offsetS, node_state)
+            #print(offsetP, offsetS, node_state)
 
         else:
             motors.off()
-            robot = Robot(map, start_node_id=1, direction='n')
+            robot = Robot(map, start_node_id=30, direction='s')
             sequence = []
-            status = 101
+            status = 102
             offsetP = 0
             offsetS = 0
-            node_state = 5  # 0: straight, 1: turning, 2: finishing turn
+            node_state = 0  # 0: straight, 1: turning, 2: finishing turn
             prev_reading = {'p': 0, 's': 0}
             key_nodes = KeyNodes()
 
@@ -190,7 +230,7 @@ if __name__ == '__main__':
 
     robot = Robot(map, start_node_id=1, direction='n')
 
-    print("Line successfully initialized in configuration 0.")
+    #print("Line successfully initialized in configuration 0.")
 
     button = Button(pin = config['buttonPin'], debounce_ms=500)
 

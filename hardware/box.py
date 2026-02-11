@@ -4,7 +4,7 @@ from libs.DFRobot_TMF8x01.DFRobot_TMF8x01 import DFRobot_TMF8701
 from libs.VL53L0X.VL53L0X import VL53L0X
 
 class Upper:
-    def __init__(self, sda = 8, scl = 9):
+    def __init__(self, sda = 16, scl = 17):
         i2c_bus = SoftI2C(sda=Pin(sda), scl=Pin(scl), freq=100000)
 
         assert len(i2c_bus.scan()) == 1
@@ -17,16 +17,22 @@ class Upper:
         self.tof.start_measurement(calib_m=self.tof.eMODE_NO_CALIB, mode=self.tof.eDISTANCE)
 
     def get_distance(self):
-        if(self.tof.is_data_ready() == True):
-            return self.tof.get_distance_mm() if self.tof.get_distance_mm() != 0 else 400
+        x = None
+        while x is None:
+            if (self.tof.is_data_ready() == True):
+                x = self.tof.get_distance_mm()
+
+        if x != 0:
+            return x
         else:
-            self.get_distance()
+            return 1000
+
 
     def start(self):
         self.tof.start_measurement(calib_m=self.tof.eMODE_NO_CALIB, mode=self.tof.eDISTANCE)
 
 class Lower:
-    def __init__(self, sda = 16, scl = 17):
+    def __init__(self, sda = 8, scl = 9):
         i2c_bus = I2C(id=0, sda=Pin(sda), scl=Pin(scl))
 
         self.vl53l0 = VL53L0X(i2c_bus)
@@ -35,7 +41,10 @@ class Lower:
         self.vl53l0.start()
 
     def get_distance(self):
-        return self.vl53l0.read()
+        #self.start()
+        x = self.vl53l0.read()
+        #self.stop()
+        return x
 
     def start(self):
         self.vl53l0.start()

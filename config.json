@@ -12,8 +12,8 @@
     }
   },
   "lineSensor": {
-    "pinPort": 18,
-    "pinCenterPort": 19,
+    "pinPort": 19,
+    "pinCenterPort": 18,
     "pinCenterStarboard": 20,
     "pinStarboard": 21
   },
@@ -32,12 +32,12 @@
 
   "box":{
   "upper": {
-    "sda" : 8,
-    "scl" : 9
+    "sda" : 16,
+    "scl" : 17
   },
     "lower": {
-      "sda" : 16,
-      "scl" : 17
+      "sda" : 8,
+      "scl" : 9
     }
 }
 }

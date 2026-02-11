@@ -5,7 +5,7 @@ from hardware.box import Upper, Lower
 
 class KeyNodes:
     def __init__(self):
-        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
+        self.empty_bays = {"r1": [44], "r2": [], "r3": [], "r4": []}
         self.coils = [6, 4, 8, 10]
         self.coil_reading = 0
 
@@ -50,6 +50,8 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper,
                 sequence = route(map, current_node_id, next_node_id)[1][:-1]
 
             else:
+                print(key_nodes.empty_bays)
+                print(key_nodes.bay_reading)
                 status = 102
 
             
@@ -86,7 +88,7 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper,
         #Alogorithm to measure resistance and drop off coil
         pause_count,res = measure_coil(key_nodes, pause_count)
         if res != None:
-            next_node_id = key_nodes.empty_bays[res].sorted()[0] 
+            next_node_id = sorted(key_nodes.empty_bays[res])[0]
             sequence = route(map, current_node_id, next_node_id)[1]
             status = 104
 
@@ -121,25 +123,27 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper,
 def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper:Upper, lower:Lower):
     #Algorithm with sensors to check bays here
     if pause_count == 0:
-        pause_count = 100
+        pause_count = 10
 
     if pause_count > 1:
         #Check with sensors top_reading, bottom_reading
         bottom_reading = lower.get_distance()
         top_reading= upper.get_distance()
         
+        print(bottom_reading,top_reading)
 
         key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] += bottom_reading
         key_nodes.bay_reading[sector[1]][key_nodes.bays[sector[1]].index(top_bay)] += top_reading
 
     else: #pause_count == 1
         #multi-addtional checker - different threshold values for the two sensors
-        threshold = [280*99,280*99]
+        threshold = [280*9,280*9]
         if key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] >= threshold[0]:
             key_nodes.empty_bays[sector[0]].append(bottom_bay)
 
         if key_nodes.bay_reading[sector[1]][key_nodes.bays[sector[1]].index(top_bay)] >= threshold[1]:
             key_nodes.empty_bays[sector[1]].append(top_bay)
+
 
     return pause_count
 
@@ -154,6 +158,8 @@ def measure_coil(key_nodes, pause_count):
         pause_count = 100
     elif pause_count == 1:
         return pause_count, "r1"
+
+    return pause_count, None
 
     # if pause_count > 1:
     #     #Check with resistor circuit reading

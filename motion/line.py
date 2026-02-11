@@ -28,6 +28,8 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
 
     prev_p = prev_reading.get('p')
     prev_s = prev_reading.get('s')
+    prev_cp = prev_reading.get('cp')
+    prev_cs = prev_reading.get('cs')
 
     node_state = 0
 
@@ -56,10 +58,10 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
     #     node_state = 3
 
     elif ((cp == 1 or cs == 1) and (p == 1 or s == 1)) and (prev_p == 0 and prev_s == 0):
-        #print('Reached node')
+        print('Reached node')
         node_state = -1
 
-    elif (cp == 0 and cs == 0):
+    elif (cp == 0 and cs == 0) and (prev_cp == 1 or prev_cs == 1):
         #print('Lost line')
         #motors.off()
         return 0 ,0 ,-2, line_data, 100
@@ -83,7 +85,7 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
 
     return offsetP, offsetS, node_state, line_data, pause_count
 
-def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333):
+def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333, turn_count=0):
     """turn at a node"""
 
     line_data = line_sensors.read_all()
@@ -92,18 +94,21 @@ def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333):
     cs = line_data.get('cs')
     s = line_data.get('s')
 
+    if turn_count > 0:
+        turn_count -= 1
+
     if (cs == 0 or cp == 0) and (node_state == 1 or node_state == 3):
         offset = sf*speed
         node_state += 1
-    elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4) and (s == 0 and p == 0):
-        return 0,0,0
+    elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4) and (s == 0 and p == 0) and turn_count == 0:
+        return 0,0,0,0
     else:
         offset = sf*speed
 
     if node_state == 1 or node_state == 2:
-        return offset,0, node_state
+        return offset,0, node_state, turn_count
     elif node_state == 3 or node_state == 4:
-        return 0, offset, node_state
+        return 0, offset, node_state, turn_count
 
 def startup(line_sensors: LineSensorArray, node_state, prev_reading):
     """Initial alignment at startup"""
@@ -156,7 +161,7 @@ def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf
         else:
             return 0,0,0,count
 
-def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, direction, count,pause_count, speed, saturation, offset_step_up, offset_step_down):
+def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, direction, count,pause_count, turn_count, speed, saturation, offset_step_up, offset_step_down):
     """Bay turning maneuver at dead-end nodes"""
     line_data = line_sensors.read_all()
     p = line_data.get('p')
@@ -179,15 +184,18 @@ def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, directi
         count += 1
 
     if node_state == 9:
-        offsetP, offsetS, node_state_temp, line_data = straight_line(line_sensors, offsetP, offsetS,  prev_reading, saturation, offset_step_up, offset_step_down)
+        offsetP, offsetS, node_state_temp, line_data, pause_count = straight_line(line_sensors, offsetP, offsetS, prev_reading,pause_count, saturation, offset_step_up, offset_step_down)
 
         if node_state_temp == -1:
             node_state += 1
-            pause_count = 100
+            pause_count = 102
 
     elif node_state == 10:
 
-        if (cs == 1 and cp == 1) and (prev_cp == 0 or prev_cs == 0) and count == 2:
+        if turn_count > 0:
+            turn_count -= 1
+
+        if (cs == 1 and cp == 1) and (prev_cp == 0 or prev_cs == 0) and count >= 1 and turn_count == 0:
             node_state = 0
 
         if direction == 'w':
@@ -208,13 +216,15 @@ def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, directi
                 offsetS = speed*2
 
 
-    return offsetP, offsetS, node_state, line_data, count, pause_count
+    return offsetP, offsetS, node_state, line_data, count, pause_count, turn_count
 
-def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed, saturation=50, offset_step_up=1, offset_step_down=5):
+def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed, pause_count, saturation=50, offset_step_up=1, offset_step_down=5):
 
-    offsetP, offsetS, node_state, line_data= straight_line(line_sensors, offsetP, offsetS, prev_reading, saturation, offset_step_up, offset_step_down)
+    offsetP, offsetS, node_state, line_data, pause_count = straight_line(line_sensors, offsetP, offsetS, prev_reading,pause_count, saturation, offset_step_up, offset_step_down)
 
     if node_state == 0:
         node_state = 11
+    elif node_state == -1:
+        pause_count = 1000
 
-    return (2*speed-offsetS), (2*speed-offsetP), node_state, line_data
+    return (2*speed-offsetS), (2*speed-offsetP), node_state, line_data, pause_count
