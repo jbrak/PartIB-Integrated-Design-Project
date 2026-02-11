@@ -3,7 +3,7 @@ from machine import Pin, SoftI2C, I2C
 from libs.DFRobot_TMF8x01.DFRobot_TMF8x01 import DFRobot_TMF8701
 from libs.VL53L0X.VL53L0X import VL53L0X
 
-class Upper:
+class Upper_old:
     def __init__(self, sda = 16, scl = 17):
         i2c_bus = SoftI2C(sda=Pin(sda), scl=Pin(scl), freq=100000)
 
@@ -31,7 +31,7 @@ class Upper:
     def start(self):
         self.tof.start_measurement(calib_m=self.tof.eMODE_NO_CALIB, mode=self.tof.eDISTANCE)
 
-class Lower:
+class DistanceSensor:
     def __init__(self, sda = 8, scl = 9):
         i2c_bus = I2C(id=0, sda=Pin(sda), scl=Pin(scl))
 

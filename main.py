@@ -3,7 +3,7 @@ from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
 from hardware.grabber import *
-from hardware.box import Upper, Lower
+from hardware.box import DistanceSensor
 from motion.line import straight_line, turn, startup, parking, bay_turning, reverse
 from motion.pathfinding import *
 from time import sleep
@@ -223,8 +223,8 @@ if __name__ == '__main__':
         s=config['lineSensor']['pinStarboard']
     )
 
-    upper = Upper(sda = config['box']['upper']['sda'], scl = config['box']['upper']['scl'])
-    lower = Lower(sda = config['box']['lower']['sda'], scl = config['box']['lower']['scl'])
+    upper = DistanceSensor(sda = config['box']['upper']['sda'], scl = config['box']['upper']['scl'])
+    lower = DistanceSensor(sda = config['box']['lower']['sda'], scl = config['box']['lower']['scl'])
 
     map = build_map()
 
