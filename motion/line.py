@@ -97,6 +97,8 @@ def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333, tur
     if turn_count > 0:
         turn_count -= 1
 
+    print(turn_count)
+
     if (cs == 0 or cp == 0) and (node_state == 1 or node_state == 3):
         offset = sf*speed
         node_state += 1
