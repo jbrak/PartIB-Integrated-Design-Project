@@ -196,6 +196,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
             node_state = 0  # 0: straight, 1: turning, 2: finishing turn
             prev_reading = {'p': 0, 's': 0}
             key_nodes = KeyNodes()
+            turn_count = 0
 
         #print(f"p: {offsetP},s:{offsetS}, node-state: {node_state}, toggle: {button.toggle}")
 
