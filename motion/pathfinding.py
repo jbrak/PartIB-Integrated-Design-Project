@@ -4,7 +4,7 @@ from machine import Pin, ADC
 from hardware.box import Upper, Lower
 
 class KeyNodes:
-    def __init__(self, map):
+    def __init__(self):
         self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
         self.coils = [6, 4, 8, 10]
         self.coil_reading = 0
@@ -134,7 +134,7 @@ def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper:Upper, lowe
 
     else: #pause_count == 1
         #multi-addtional checker - different threshold values for the two sensors
-        threshold = [10000,10000]
+        threshold = [280*99,280*99]
         if key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] >= threshold[0]:
             key_nodes.empty_bays[sector[0]].append(bottom_bay)
 
@@ -152,20 +152,22 @@ def measure_coil(key_nodes, pause_count):
     res = None
     if pause_count == 0:
         pause_count = 100
+    elif pause_count == 1:
+        return pause_count, "r1"
 
-    if pause_count > 1:
-        #Check with resistor circuit reading
-        res_reading = adc.read_u16()
-
-        key_nodes.coil_reading += res_reading
-
-    else: #pause_count == 1
-        #decide on which resistor is correct
-        threshold = [4000,10000,40000,44000]
-
-        for i in range(len(threshold)):
-            if key_nodes.coil_reading<=threshold[i] and res == None:
-                res = list(key_nodes.r)[i]
-                Pin(key_nodes.led_pin_lookup[res], Pin.OUT).value(1)
-
-    return pause_count,res
+    # if pause_count > 1:
+    #     #Check with resistor circuit reading
+    #     res_reading = adc.read_u16()
+    #
+    #     key_nodes.coil_reading += res_reading
+    #
+    # else: #pause_count == 1
+    #     #decide on which resistor is correct
+    #     threshold = [4000,10000,40000,44000]
+    #
+    #     for i in range(len(threshold)):
+    #         if key_nodes.coil_reading<=threshold[i] and res == None:
+    #             res = list(key_nodes.r)[i]
+    #             Pin(key_nodes.led_pin_lookup[res], Pin.OUT).value(1)
+    #
+    # return pause_count,res

@@ -17,7 +17,10 @@ class Upper:
         self.tof.start_measurement(calib_m=self.tof.eMODE_NO_CALIB, mode=self.tof.eDISTANCE)
 
     def get_distance(self):
-        return self.tof.get_distance_mm()
+        if(self.tof.is_data_ready() == True):
+            return self.tof.get_distance_mm() if self.tof.get_distance_mm() != 0 else 400
+        else:
+            self.get_distance()
 
     def start(self):
         self.tof.start_measurement(calib_m=self.tof.eMODE_NO_CALIB, mode=self.tof.eDISTANCE)

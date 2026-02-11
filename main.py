@@ -2,7 +2,7 @@ from config.config import load_config
 from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
-from hardware.grabber import Servo
+from hardware.grabber import *
 from hardware.box import Upper, Lower
 from motion.line import straight_line, turn, startup, parking, bay_turning, reverse
 from motion.pathfinding import *
@@ -135,10 +135,10 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
 
                 if status == 102:
                     ## Code for picking up coil
-                    pass
-                elif status == 104:
+                    pause_count = pick_up_coil(pause_count)
+                elif status == 104 and len(sequence) == 0:
                     ## Code for releasing coil
-                    pass
+                    pause_count = drop_off_coil(pause_count)
 
                 ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
                 if type(map.nodes.get(robot.next_node_id)) == DeadEnd and node_state == -2:

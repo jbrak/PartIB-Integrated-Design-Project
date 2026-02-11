@@ -12,10 +12,10 @@
     }
   },
   "lineSensor": {
-    "pinPort": 21,
+    "pinPort": 18,
     "pinCenterPort": 19,
     "pinCenterStarboard": 20,
-    "pinStarboard": 18
+    "pinStarboard": 21
   },
   "buttonPin": 0,
 
@@ -27,7 +27,7 @@
   },
 
   "turns": {
-    "scale_factor": 0.75
+    "scale_factor": 0.8
   },
 
   "box":{
