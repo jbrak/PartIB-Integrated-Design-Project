@@ -60,7 +60,7 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
     #     node_state = 3
 
     elif ((cp == 1 or cs == 1) and (p == 1 or s == 1)) and (prev_p == 0 and prev_s == 0):
-        print('Reached node')
+        #print('Reached node')
         node_state = -1
 
     elif (cp == 0 and cs == 0) and (prev_cp == 1 or prev_cs == 1):
@@ -98,7 +98,7 @@ def turn(line_sensors: LineSensorArray, speed, node_state, pause_count, sf:float
 
     if turn_count > 0 and pause_count==0:
         turn_count -= 1
-    else:
+    elif turn_count==0:
         Pin(11, Pin.OUT).value(0)
 
     #print(turn_count)

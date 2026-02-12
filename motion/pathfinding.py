@@ -4,7 +4,7 @@ from machine import Pin, ADC
 
 class KeyNodes:
     def __init__(self):
-        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": [43,44,45]}
+        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
         self.coils = [6, 4, 8, 10]
         self.coil_reading = 0
 
@@ -15,7 +15,7 @@ class KeyNodes:
         self.led_pin_lookup = {"r1": 10, "r2": 11, "r3": 14, "r4": 12}
 
 
-def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper, lower:Lower):
+def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower):
 
     sequence = []
 
@@ -63,9 +63,7 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper,
             #Some way to choose closest coil?
             sequence = route(map, current_node_id, key_nodes.coils[0])[1]
 
-            if len(sequence) > 2:
-                if sequence[2] == "s" and current_node_id not in [17,23,42,36]:
-                    sequence.pop(2)
+            print("sequence", sequence)
 
             for coil in key_nodes.coils:
                 temp_seq = route(map, current_node_id, coil)[1]
