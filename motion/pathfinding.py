@@ -1,11 +1,10 @@
 from map.map import *
 from map.route import *
 from machine import Pin, ADC
-from hardware.box import Upper, Lower
 
 class KeyNodes:
     def __init__(self):
-        self.empty_bays = {"r1": [44], "r2": [], "r3": [], "r4": []}
+        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": [43,44,45]}
         self.coils = [6, 4, 8, 10]
         self.coil_reading = 0
 
@@ -13,7 +12,7 @@ class KeyNodes:
         self.bays_searched = {"r1": [], "r2": [], "r3": [], "r4": []}
         self.bay_reading = {"r1": [0]*6, "r2": [0]*6, "r3": [0]*6, "r4": [0]*6}
         self.r = ["r1","r2","r3","r4"]
-        self.led_pin_lookup = {"r1": 10, "r2": 11, "r3": 12, "r4": 14}
+        self.led_pin_lookup = {"r1": 10, "r2": 11, "r3": 14, "r4": 12}
 
 
 def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper, lower:Lower):
@@ -63,6 +62,11 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper,
 
             #Some way to choose closest coil?
             sequence = route(map, current_node_id, key_nodes.coils[0])[1]
+
+            if len(sequence) > 2:
+                if sequence[2] == "s" and current_node_id not in [17,23,42,36]:
+                    sequence.pop(2)
+
             for coil in key_nodes.coils:
                 temp_seq = route(map, current_node_id, coil)[1]
                 if len(temp_seq) < len(sequence):
@@ -120,7 +124,7 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper:Upper,
 
     return sequence,status, pause_count
 
-def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper:Upper, lower:Lower):
+def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
     #Algorithm with sensors to check bays here
     if pause_count == 0:
         pause_count = 10
@@ -157,7 +161,8 @@ def measure_coil(key_nodes, pause_count):
     if pause_count == 0:
         pause_count = 100
     elif pause_count == 1:
-        return pause_count, "r1"
+        Pin(key_nodes.led_pin_lookup["r4"], Pin.OUT).value(1)
+        return pause_count, "r4"
 
     return pause_count, None
 

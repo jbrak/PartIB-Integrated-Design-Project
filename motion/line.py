@@ -1,6 +1,8 @@
 from hardware.line import LineSensorArray
 from hardware.motor import Motors
 from time import sleep
+from machine import Pin
+
 """
 Node states:
 -2 : lost line, proceed with next action
@@ -85,7 +87,7 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
 
     return offsetP, offsetS, node_state, line_data, pause_count
 
-def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333, turn_count=0):
+def turn(line_sensors: LineSensorArray, speed, node_state, pause_count, sf:float=0.83333, turn_count=0):
     """turn at a node"""
 
     line_data = line_sensors.read_all()
@@ -94,23 +96,25 @@ def turn(line_sensors: LineSensorArray, speed, node_state, sf:float=0.83333, tur
     cs = line_data.get('cs')
     s = line_data.get('s')
 
-    if turn_count > 0:
+    if turn_count > 0 and pause_count==0:
         turn_count -= 1
+    else:
+        Pin(11, Pin.OUT).value(0)
 
-    print(turn_count)
+    #print(turn_count)
 
     if (cs == 0 or cp == 0) and (node_state == 1 or node_state == 3):
         offset = sf*speed
         node_state += 1
     elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4) and (s == 0 and p == 0) and turn_count == 0:
-        return 0,0,0,0
+        return 0,0,0,0,0
     else:
         offset = sf*speed
 
     if node_state == 1 or node_state == 2:
-        return offset,0, node_state, turn_count
+        return offset,0, node_state, turn_count, pause_count
     elif node_state == 3 or node_state == 4:
-        return 0, offset, node_state, turn_count
+        return 0, offset, node_state, turn_count, pause_count
 
 def startup(line_sensors: LineSensorArray, node_state, prev_reading):
     """Initial alignment at startup"""
@@ -197,7 +201,7 @@ def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, directi
         if turn_count > 0:
             turn_count -= 1
 
-        if (cs == 1 and cp == 1) and (prev_cp == 0 or prev_cs == 0) and count >= 1 and turn_count == 0:
+        if (cs == 1 and cp == 1) and (prev_cp == 0 or prev_cs == 0) and count >= 2 and turn_count == 0:
             node_state = 0
 
         if direction == 'w':
