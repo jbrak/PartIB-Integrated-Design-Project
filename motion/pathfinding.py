@@ -4,8 +4,8 @@ from machine import Pin, ADC
 
 class KeyNodes:
     def __init__(self):
-        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
-        self.coils = [6, 4, 8, 10]
+        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": [42]}
+        self.coils = [] #[6, 4, 8, 10]
         self.coil_reading = 0
 
         self.bays = {"r1": [17,18,19,20,21,22], "r2": [23,24,25,26,27,28], "r3": [41,40,39,38,37,36], "r4": [47,46,45,44,43,42]}
@@ -81,6 +81,7 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
                     status = 103
 
         else:
+            pause_count = 50
             status = 105
 
 

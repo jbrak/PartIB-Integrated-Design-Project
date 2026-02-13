@@ -117,7 +117,8 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                     print("next:", robot.next_node_id)
                     print(sequence)
 
-                elif len(sequence) == 0 and status == 105:
+                elif len(sequence) == 0 and status == 105 and pause_count == 0:
+                    Pin(10, Pin.OUT).value(1)
                     node_state = 7
                     count = 0
 
@@ -241,14 +242,14 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
 
         else:
             motors.off()
-            robot = Robot(map, start_node_id=1, direction='n')
+            robot = Robot(map, start_node_id=54, direction='e')
             offsetP = 0
             offsetS = 0
-            node_state = 5  # 0: straight, 1: turning, 2: finishing turn
+            node_state = 0  # 0: straight, 1: turning, 2: finishing turn
             prev_reading = {'p': 0, 's': 0}
             sequence = []
             pause_count = 0
-            status = 101
+            status = 103
             key_nodes = KeyNodes()
             turn_count = 0
             missed_count = 0
