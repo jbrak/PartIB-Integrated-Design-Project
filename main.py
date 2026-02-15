@@ -21,7 +21,7 @@ status:
 """
 
 
-def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : Upper, lower : Lower):
+def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:DistanceSensor, lower:DistanceSensor):
     motors.off()
 
     #input("Press Enter to continue...")
@@ -88,7 +88,9 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                                 #     if list(map.nodes.get(node).connections.values())[0] == robot.last_node_id:
                                 if robot.last_node_id in bays:
                                     Pin(11, Pin.OUT).value(1)
+                                    #turn_count = key_nodes.turn_count_lookup[robot.last_bay]
                                     turn_count = 1750
+                                    #print(turn_count)
 
                     next_direction = sequence.pop(0)
                     turn_direction = robot.update_direction(next_direction)
@@ -109,13 +111,13 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                     else:
                         node_state = 0
 
-                    print("--------------------------------")
-                    print(turn_direction)
-                    print("NODE STATE",node_state)
-                    print(robot.direction)
-                    print("prev:", robot.last_node_id)
-                    print("next:", robot.next_node_id)
-                    print(sequence)
+                    # print("--------------------------------")
+                    # print(turn_direction)
+                    # print("NODE STATE",node_state)
+                    # print(robot.direction)
+                    # print("prev:", robot.last_node_id)
+                    # print("next:", robot.next_node_id)
+                    # print(sequence)
 
                 elif len(sequence) == 0 and status == 105 and pause_count == 0:
                     Pin(10, Pin.OUT).value(1)
@@ -126,14 +128,15 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                     #print("Sequence complete. Stopping robot.")
                     sequence, status, pause_count = next_node(map, status, pause_count, robot.next_node_id, key_nodes, upper, lower)
 
-                    print(status, sequence)
+                    #print(status, sequence)
 
-                    if status == 102 and len(sequence) > 0:
+                    if (status == 102 or status == 105) and len(sequence) > 0:
                         souths = 0
                         for bays in key_nodes.bays.values():
                             if robot.next_node_id in bays:
                                 bays = sorted(bays)
                                 souths = bays.index(robot.next_node_id)
+                                #robot.last_bay = robot.next_node_id
                                 robot.next_node_id = bays[0]
                                 #robot.next_node_id = list(map.nodes.get(bays[0]).connections.values())[0]
                                 break
@@ -142,7 +145,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
                             sequence.pop(1)
 
                         missed_count = 1300*souths
-                        print(missed_count)
+                        #print(missed_count)
 
 
 
@@ -242,14 +245,15 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper : U
 
         else:
             motors.off()
-            robot = Robot(map, start_node_id=54, direction='e')
+            #robot = Robot(map, start_node_id=9, direction='n')
+            robot = Robot(map, start_node_id=1, direction='n')
             offsetP = 0
             offsetS = 0
-            node_state = 0  # 0: straight, 1: turning, 2: finishing turn
+            node_state = 5  # 0: straight, 1: turning, 2: finishing turn
             prev_reading = {'p': 0, 's': 0}
             sequence = []
             pause_count = 0
-            status = 103
+            status = 101
             key_nodes = KeyNodes()
             turn_count = 0
             missed_count = 0
@@ -280,8 +284,8 @@ if __name__ == '__main__':
         s=config['lineSensor']['pinStarboard']
     )
 
-    upper = DistanceSensor(sda = config['box']['upper']['sda'], scl = config['box']['upper']['scl'])
-    lower = DistanceSensor(sda = config['box']['lower']['sda'], scl = config['box']['lower']['scl'])
+    upper = DistanceSensor(id=config['box']['upper']['id'],sda = config['box']['upper']['sda'], scl = config['box']['upper']['scl'])
+    lower = DistanceSensor(id=config['box']['lower']['id'],sda = config['box']['lower']['sda'], scl = config['box']['lower']['scl'])
 
     map = build_map()
 
@@ -292,7 +296,7 @@ if __name__ == '__main__':
     button = Button(pin = config['buttonPin'], debounce_ms=500)
 
     try:
-        main(motors, LineSensors, button, map, robot, upper, lower)
+        main(motors, LineSensors, button, map, robot, upper=upper, lower =lower)
     except KeyboardInterrupt:
         motors.off()
         raise KeyboardInterrupt

@@ -4,8 +4,8 @@ from machine import Pin, ADC
 
 class KeyNodes:
     def __init__(self):
-        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": [42]}
-        self.coils = [] #[6, 4, 8, 10]
+        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
+        self.coils = [6, 4, 8, 10]
         self.coil_reading = 0
 
         self.bays = {"r1": [17,18,19,20,21,22], "r2": [23,24,25,26,27,28], "r3": [41,40,39,38,37,36], "r4": [47,46,45,44,43,42]}
@@ -13,6 +13,10 @@ class KeyNodes:
         self.bay_reading = {"r1": [0]*6, "r2": [0]*6, "r3": [0]*6, "r4": [0]*6}
         self.r = ["r1","r2","r3","r4"]
         self.led_pin_lookup = {"r1": 10, "r2": 11, "r3": 14, "r4": 12}
+        # self.turn_count_lookup = {17: 1650, 18: 1650, 19: 1650, 20: 1650, 21: 1650, 22: 1650,
+        #                           36: 1650, 37:1750, 38:1600, 39:1500, 40:1750, 41:1500,
+        #                           23: 1650, 24: 1650, 25: 1650, 26: 1650, 27: 1650, 28: 1650,
+        #                           42: 1750, 43: 1750, 44: 1750, 45: 1750, 46: 1750, 47: 1750}
 
 
 def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower):
@@ -49,8 +53,15 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
                 sequence = route(map, current_node_id, next_node_id)[1][:-1]
 
             else:
-                print(key_nodes.empty_bays)
-                print(key_nodes.bay_reading)
+                # print(key_nodes.empty_bays)
+                # print(key_nodes.bay_reading)
+
+                with open("bay_reading.txt", "w") as f:
+                    f.write(str(key_nodes.bay_reading))
+                    f.write("\n")
+                    f.write(str(key_nodes.empty_bays))
+                    f.close()
+
                 status = 102
 
             
@@ -63,7 +74,7 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
             #Some way to choose closest coil?
             sequence = route(map, current_node_id, key_nodes.coils[0])[1]
 
-            print("sequence", sequence)
+            #print("sequence", sequence)
 
             for coil in key_nodes.coils:
                 temp_seq = route(map, current_node_id, coil)[1]
@@ -133,7 +144,12 @@ def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
         bottom_reading = lower.get_distance()
         top_reading= upper.get_distance()
         
-        print(bottom_reading,top_reading)
+        # with open("bay_reading2.txt", "a") as f:
+        #     f.write("bottom: "+str(bottom_reading))
+        #     f.write(",")
+        #     f.write("top: "+str(top_reading))
+        #     f.write("\n")
+        #     f.close()
 
         key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] += bottom_reading
         key_nodes.bay_reading[sector[1]][key_nodes.bays[sector[1]].index(top_bay)] += top_reading
@@ -161,7 +177,7 @@ def measure_coil(key_nodes, pause_count):
         pause_count = 100
     elif pause_count == 1:
         Pin(key_nodes.led_pin_lookup["r4"], Pin.OUT).value(1)
-        return pause_count, "r4"
+        return pause_count, key_nodes.r.pop(0)
 
     return pause_count, None
 

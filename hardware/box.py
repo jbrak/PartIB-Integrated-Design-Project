@@ -32,8 +32,9 @@ class Upper_old:
         self.tof.start_measurement(calib_m=self.tof.eMODE_NO_CALIB, mode=self.tof.eDISTANCE)
 
 class DistanceSensor:
-    def __init__(self, sda = 8, scl = 9):
-        i2c_bus = I2C(id=0, sda=Pin(sda), scl=Pin(scl))
+    def __init__(self, sda, scl, id):
+
+        i2c_bus = I2C(id=id,sda=Pin(sda), scl=Pin(scl))
 
         self.vl53l0 = VL53L0X(i2c_bus)
         self.vl53l0.set_Vcsel_pulse_period(self.vl53l0.vcsel_period_type[0], 18)
@@ -41,9 +42,9 @@ class DistanceSensor:
         self.vl53l0.start()
 
     def get_distance(self):
-        #self.start()
+        self.start()
         x = self.vl53l0.read()
-        #self.stop()
+        self.stop()
         return x
 
     def start(self):
