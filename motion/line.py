@@ -225,6 +225,11 @@ def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, directi
     return offsetP, offsetS, node_state, line_data, count, pause_count, turn_count
 
 def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed, pause_count, saturation=50, offset_step_up=1, offset_step_down=5):
+    line_data = line_sensors.read_all()
+    p = line_data.get('p')
+    cp = line_data.get('cp')
+    cs = line_data.get('cs')
+    s = line_data.get('s')
 
     offsetP, offsetS, node_state, line_data, pause_count = straight_line(line_sensors, offsetP, offsetS, prev_reading,pause_count, saturation, offset_step_up, offset_step_down)
 
@@ -232,6 +237,10 @@ def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed,
         node_state = 11
     elif node_state == -1:
         pause_count = 100 # 1000
+
+    if (p, cp, cs, s) == (1, 1, 1, 1) or (p, cp, cs, s) == (0, 0, 0, 0):
+        offsetP = 0
+        offsetS = 0
 
     # if offsetP != 0 :
     #     offsetP = saturation

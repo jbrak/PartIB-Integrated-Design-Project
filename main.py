@@ -3,6 +3,7 @@ from hardware.motor import Motors
 from hardware.line import LineSensorArray
 from hardware.button import Button
 from hardware.grabber import *
+from motion.grabber import *
 from hardware.box import DistanceSensor
 from motion.line import straight_line, turn, startup, parking, bay_turning, reverse
 from motion.pathfinding import *
@@ -21,7 +22,7 @@ status:
 """
 
 
-def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:DistanceSensor, lower:DistanceSensor):
+def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:DistanceSensor, lower:DistanceSensor, grabber:Servo, lifter:Servo):
     motors.off()
 
     #input("Press Enter to continue...")
@@ -100,7 +101,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     if type(map.nodes.get(robot.last_node_id)) == Bay and turn_direction in ['s','p'] and robot.direction in ['w', 'e']:
                         node_state = 9
                         count = 1
-                        turn_count = 200 #500
+                        turn_count = 300 #500
                     elif turn_direction == 's':
                         node_state = 3
                     elif turn_direction == 'p':
@@ -108,6 +109,8 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     elif turn_direction == 'b':
                         node_state = 11
                         count = 1
+                        offsetP = 0
+                        offsetS = 0
                     else:
                         node_state = 0
 
@@ -144,7 +147,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                         for j in range(souths):
                             sequence.pop(1)
 
-                        missed_count = 400*souths #1300*souths
+                        missed_count = 400*souths + 10 #1300*souths
                         #print(missed_count)
 
 
@@ -233,12 +236,15 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                 motors.s.off()
                 pause_count -= 1
 
-                if status == 102:
+                if status == 103:
                     ## Code for picking up coil
-                    pause_count = pick_up_coil(pause_count)
-                elif status == 104 and len(sequence) == 0:
+                    grab(motors, grabber, lifter)
+                    pause_count = 1
+
+                elif status == 104 and len(sequence) == 0 and not node_state in [9,10]:
                     ## Code for releasing coil
-                    pause_count = drop_off_coil(pause_count)
+                    drop(grabber)
+                    pause_count = 1
 
                 ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
                 if type(map.nodes.get(robot.next_node_id)) == DeadEnd and node_state == -2:
@@ -249,23 +255,30 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
             if missed_count > 0 and robot.direction == "s" and pause_count == 0:
                 missed_count -= 1
                 Pin(14, Pin.OUT).value(1)
+
+                if missed_count == 1:
+                    home(grabber, lifter)
+
             elif missed_count == 0:
                 Pin(14, Pin.OUT).value(0)
 
         else:
             motors.off()
             #robot = Robot(map, start_node_id=9, direction='n')
-            robot = Robot(map, start_node_id=1, direction='n')
+            robot = Robot(map, start_node_id=30, direction='s')
             offsetP = 0
             offsetS = 0
-            node_state = 5  # 0: straight, 1: turning, 2: finishing turn
+            node_state = 0  # 0: straight, 1: turning, 2: finishing turn
             prev_reading = {'p': 0, 's': 0}
             sequence = []
             pause_count = 0
-            status = 101
+            status = 102 #101
             key_nodes = KeyNodes()
             turn_count = 0
             missed_count = 0
+            home(grabber, lifter)
+            for i in key_nodes.led_pin_lookup.values():
+                Pin(i, Pin.OUT).value(0)
 
         #print(f"p: {offsetP},s:{offsetS}, node-state: {node_state}, toggle: {button.toggle}")
 
@@ -281,8 +294,8 @@ if __name__ == '__main__':
                     sdrift_compensation=config['motor']['starboard']['driftCompensation'],
                     pdrift_compensation=config['motor']['port']['driftCompensation'])
 
-    grabber = Servo(15, 100)
-    lifter = Servo(13, 100)
+    grabber = Servo(15, 100, 2400, 4500)
+    lifter = Servo(13, 100, 3700, 5000, 4000)
 
     # initialize line sensor array (choose configuration based on config)
     # run checking function based on configuration
@@ -305,7 +318,7 @@ if __name__ == '__main__':
     button = Button(pin = config['buttonPin'], debounce_ms=500)
 
     try:
-        main(motors, LineSensors, button, map, robot, upper=upper, lower =lower)
+        main(motors, LineSensors, button, map, robot, upper=upper, lower =lower, grabber = grabber, lifter = lifter)
     except KeyboardInterrupt:
         motors.off()
         raise KeyboardInterrupt

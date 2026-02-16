@@ -4,7 +4,7 @@ from machine import Pin, ADC
 
 class KeyNodes:
     def __init__(self):
-        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
+        self.empty_bays = {"r1": [17], "r2": [23], "r3": [41], "r4": [47]}
         self.coils = [6, 4, 8, 10]
         self.coil_reading = 0
 
@@ -84,11 +84,12 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
             if len(sequence) == 0:
                 #Reached coil, activate picking up mech
                 if pause_count == 0:
-                    pause_count = 100 #100
+                    pause_count = 2 #100
 
                 if pause_count <= 1:
                     #Pick-up complete
                     key_nodes.coils.remove(current_node_id)
+                    pause_count = 0
                     status = 103
 
         else:
@@ -172,28 +173,41 @@ def measure_coil(key_nodes, pause_count):
     #Measures and determines the resistoance of coils
     adc = ADC(Pin(28))
 
+    print("103")
+
     res = None
     if pause_count == 0:
-        pause_count = 100
-    elif pause_count == 1:
-        Pin(key_nodes.led_pin_lookup["r4"], Pin.OUT).value(1)
-        return pause_count, key_nodes.r.pop(0)
+        pause_count = 20
+        key_nodes.coils_reading = 0
+        print("reset pause count, start measuring")
+    # elif pause_count == 1:
+    #     Pin(key_nodes.led_pin_lookup["r4"], Pin.OUT).value(1)
+    #     return pause_count, key_nodes.r.pop(0)
+    #
+    # return pause_count, None
 
-    return pause_count, None
+    if pause_count > 1:
+        #Check with resistor circuit reading
+        res_reading = adc.read_u16()
 
-    # if pause_count > 1:
-    #     #Check with resistor circuit reading
-    #     res_reading = adc.read_u16()
-    #
-    #     key_nodes.coil_reading += res_reading
-    #
-    # else: #pause_count == 1
-    #     #decide on which resistor is correct
-    #     threshold = [4000,10000,40000,44000]
-    #
-    #     for i in range(len(threshold)):
-    #         if key_nodes.coil_reading<=threshold[i] and res == None:
-    #             res = list(key_nodes.r)[i]
-    #             Pin(key_nodes.led_pin_lookup[res], Pin.OUT).value(1)
-    #
-    # return pause_count,res
+        key_nodes.coil_reading += res_reading
+
+        print("Resistor Reading: ", res_reading, "Sum:", key_nodes.coil_reading)
+
+        # with open("coil_reading.txt", "w") as f:
+        #     f.write(str(res_reading) + ", " +str(key_nodes.coil_reading))
+        #     f.write("Hello World")
+        #     f.write("\n")
+        #     f.close()
+
+    else: #pause_count == 1
+        #decide on which resistor is correct
+        threshold = [4000,10000,40000,44000]
+
+        for i in range(len(threshold)):
+            if key_nodes.coil_reading<=(threshold[i]*19) and res == None:
+                res = key_nodes.r[i]
+                Pin(key_nodes.led_pin_lookup[res], Pin.OUT).value(1)
+                break
+
+    return pause_count,res
