@@ -194,7 +194,7 @@ def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, directi
 
         if node_state_temp == -1:
             node_state += 1
-            pause_count = 102
+            pause_count = 25 #102
 
     elif node_state == 10:
 
@@ -231,6 +231,12 @@ def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed,
     if node_state == 0:
         node_state = 11
     elif node_state == -1:
-        pause_count = 1000
+        pause_count = 100 # 1000
+
+    # if offsetP != 0 :
+    #     offsetP = saturation
+    #
+    # if offsetS != 0 :
+    #     offsetS = saturation
 
     return (2*speed-offsetS), (2*speed-offsetP), node_state, line_data, pause_count

@@ -41,7 +41,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
     turn_count = 0
     missed_count = 0
 
-    TARGET_HZ = 2000
+    TARGET_HZ = 500
     PERIOD_US = 1_000_000 // TARGET_HZ
 
     next_tick = utime.ticks_add(utime.ticks_us(), PERIOD_US)
@@ -89,7 +89,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                                 if robot.last_node_id in bays:
                                     Pin(11, Pin.OUT).value(1)
                                     #turn_count = key_nodes.turn_count_lookup[robot.last_bay]
-                                    turn_count = 1750
+                                    turn_count = 450 #1750
                                     #print(turn_count)
 
                     next_direction = sequence.pop(0)
@@ -100,7 +100,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     if type(map.nodes.get(robot.last_node_id)) == Bay and turn_direction in ['s','p'] and robot.direction in ['w', 'e']:
                         node_state = 9
                         count = 1
-                        turn_count = 500
+                        turn_count = 200 #500
                     elif turn_direction == 's':
                         node_state = 3
                     elif turn_direction == 'p':
@@ -144,7 +144,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                         for j in range(souths):
                             sequence.pop(1)
 
-                        missed_count = 1300*souths
+                        missed_count = 400*souths #1300*souths
                         #print(missed_count)
 
 
@@ -204,12 +204,21 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     offsetS, offsetP = offsetP, offsetS
 
             if pause_count == 0:
+
+                if node_state != 0 and node_state != 11:
+                    offsetP -= motors.p.drift_compensation
+                    offsetS -= motors.s.drift_compensation
+                elif node_state == 11:
+                    offsetP += motors.p.drift_compensation
+                    offsetS += motors.s.drift_compensation
+
+
                 if offsetP <= speed:
                     motors.p.forward(speed, offset=offsetP)
                 elif offsetP == 3*speed:
                     motors.s.off()
                 elif offsetP > speed:
-                    motors.p.reverse(speed, offset=(speed*2-offsetP))
+                    motors.p.reverse(speed*0.8, offset=(speed*2-offsetP))
 
 
                 if offsetS <= speed:
@@ -217,7 +226,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                 elif offsetS == 3*speed:
                     motors.s.off()
                 elif offsetS > speed:
-                    motors.s.reverse(speed, offset=(speed*2-offsetS))
+                    motors.s.reverse(speed*0.8, offset=(speed*2-offsetS))
 
             else:
                 motors.p.off()

@@ -14,11 +14,11 @@ class Motor:
 
     def forward(self, speed=100, offset=0):
         self.mDir.value(0)  # forward = 0 reverse = 1 motor
-        self.pwm.duty_u16(int(65535 * (speed-self.drift_compensation-offset) / 100))  # speed range 0-100 motor
+        self.pwm.duty_u16(int(65535 * (speed-self.drift_compensation*(speed/100)-offset) / 100))  # speed range 0-100 motor
 
     def reverse(self, speed=30, offset=0):
         self.mDir.value(1)
-        self.pwm.duty_u16(int(65535 * (speed-self.drift_compensation-offset) / 100))
+        self.pwm.duty_u16(int(65535 * (speed-self.drift_compensation*(speed/100)-offset) / 100))
 
 class Motors:
     '''Dual motor driver class for controlling port and starboard motors.'''
