@@ -34,7 +34,7 @@ class Servo:
     """
 
     # offset = 2400 and maximum = 15000 are averaged from tested values. Refer to duty_u16 values
-    def __init__(self, pin, freq, offset=2400, maximum=15000):
+    def __init__(self, pin, freq, offset=2400, maximum=15000, zero=2400):
         """
         Parameters
         ----------
@@ -49,13 +49,14 @@ class Servo:
         """
         self.pwm = PWM(Pin(pin), freq)
         self.multiplier = 47.8 # multiplier for angle -> u16 conversion. Tested angle, accurate enough
-        self.offset = int(offset) # u16 value setting the servo's zero state
+        self.offset = int(offset) # u16 value setting the servo's minimum
+        self.zero = int(zero)
         self.maximum = int(maximum) # u16 value setting the servo's maximum rotation
         self.zero_degrees()
         self.duty_u16 = self.pwm.duty_u16()
         
     def zero_degrees(self): # Sets the Servo to its zero state
-        self.pwm.duty_u16(self.offset)
+        self.pwm.duty_u16(self.zero)
 
     def turn_angle(self, angle, time_ms=1): 
         # Turns (around) the angle in degrees you ask
@@ -129,10 +130,10 @@ class Servo:
         self.duty_u16 = int(self.duty_u16)
 
 def grab():
-    grabber.set_duty(3600)
+    grabber.set_duty(3600, 500)
     
 def drop():
-    grabber.turn_duty(-800)
+    grabber.turn_duty(-800, 500)
 
 def lift(time_ms=500):
     lifter.turn_duty(900, time_ms)
@@ -197,20 +198,62 @@ def test_turn(servo: Servo, minimum=None, maximum=None):
     servo.turn_duty(minimum-servo.offset)
     # Turns the servo slowly to maximum
     while servo.duty_u16 < maximum:
-        servo.turn_duty(20)
+        servo.turn_duty(50)
+        print(servo.duty_u16)
+        sleep(0.1)
+
+def test_turn2(servo: Servo, minimum=None, maximum=None):
+    """
+    Gives you the duty_u16 values while rotating the servo for testing purposes
+    
+    Parameters
+    ----------
+    servo : Servo
+        The servo you want to test
+    minimum : int, optional
+        The smallest pwm duty that it will test (Default = servo's offset)
+    maximum : int, optional
+        The largest pwm duty that it will test (Default = servo's maximum)
+    """
+
+    # minimum and maximum are in u16 format. If "None" will just use the servo's limits
+    if minimum == None:
+        minimum = servo.offset
+    if maximum == None:
+        maximum = servo.maximum
+    # Turns the servo slowly to maximum
+    while servo.duty_u16 > minimum:
+        servo.turn_duty(-20)
         print(servo.duty_u16)
         sleep(0.1)
         
 grabber = Servo(15, 100, 2400, 4500) # Servo 1, limits are the maximum we want it to turn
-lifter = Servo(13, 100, 2500, 3700) # Servo 2, limits around correct
+# Open: Grabber at 2.4k
+# Closed: Grabber at 4.5k
+# Halfway: Grabber at 3.8k
+
+
+lifter = Servo(13, 100, 3700, 5000, 4000) # Servo 2, limits around correct
+# Grabbing: Lifter at 3.7k
+# Driving: Lifter at 4k
+# Lifting: Lifter at 4.7k
+
+
+
+
 
 if __name__ == "__main__":
-    reset = 1
+    reset = 0
     if reset == 1:
         print("Reset all servos!")
     else:
         sleep(3)
-        test_turn(grabber)
+        lifter.set_duty(3700, 100)
+        sleep(0.1)
+        grabber.set_duty(4500, 100)
+        sleep(0.1)
+        lifter.set_duty(5000, 100)
         sleep(1)
-        test_turn(lifter, maximum=3400)
+        #test_turn2(grabber)
+        grabber.set_duty(3800, 100)
     

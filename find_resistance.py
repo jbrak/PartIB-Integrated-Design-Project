@@ -2,7 +2,7 @@ from machine import Pin, ADC
 from utime import sleep
 
 """"Returns the value of the resistor between the grabber using the u16 number found by the ADC"""
-def find_resistor(voltage):
+def find_resistor(voltage) -> str:
     # Values look arbitrary but were tested for the pico
     if voltage < 4000:
         return "100"
@@ -22,16 +22,16 @@ def find_resistance():
     adc = ADC(Pin(28)) # creates an ADC on GPIO 28 (pin 34)
     voltages = []
     
-    for i in range(100): # Reads 100 u16 values through the ADC and adds them all to the voltages array
+    for i in range(20): # Reads 100 u16 values through the ADC and adds them all to the voltages array
         voltage = adc.read_u16()
         voltages.append(voltage)
         sleep(0.01)
     
     # Takes the average value of all of the u16 values
     avg = 0
-    for i in range(100):
+    for i in range(20):
         avg = avg + voltages[i]
-    avg = avg / 100
+    avg = avg / 20
     
     # Uses find_resistor(voltage) to find the resistance needed, and prints it
     resistance = find_resistor(avg)
@@ -40,6 +40,6 @@ def find_resistance():
 
 if __name__ == "__main__":
     # Keep looking for the resistance between the grabbers 
-    while True:
+    for _ in range(100):
         find_resistance()
-        sleep(1)
+        sleep(0.1)
