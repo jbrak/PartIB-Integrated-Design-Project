@@ -5,7 +5,7 @@ from machine import Pin, ADC
 class KeyNodes:
     def __init__(self):
         self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
-        self.coils = [6, 4, 8] #10
+        self.coils = [6, 4, 8, 10]
         self.coil_reading = 0
 
         self.bays = {"r1": [17,18,19,20,21,22], "r2": [23,24,25,26,27,28], "r3": [41,40,39,38,37,36], "r4": [47,46,45,44,43,42]}
@@ -177,7 +177,7 @@ def measure_coil(key_nodes, pause_count):
         pause_count = 100
     elif pause_count == 1:
         Pin(key_nodes.led_pin_lookup["r4"], Pin.OUT).value(1)
-        return pause_count, "r4" #key_nodes.r.pop(0)
+        return pause_count, key_nodes.r.pop(0)
 
     return pause_count, None
 
