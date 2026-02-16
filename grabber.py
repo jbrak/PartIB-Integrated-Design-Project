@@ -2,26 +2,69 @@ from machine import Pin, PWM
 from utime import sleep
 
 class Servo:
+    """
+    Lets you control the servos easily
+    
+    Attributes
+    ----------
+    pwm : PWM
+        Holds pwm object for the servo
+    multiplier : float
+        Holds the multiplicative factor for converting between duty_u16 values and angles
+    offset : int
+        Holds the minimum duty_u16 value that the servo can turn to
+    maximum : int
+        Holds the maximum duty_u16 value that the servo can turn to
+    duty_u16 : int
+        Holds the current duty_u16 value for the servo
 
-    # Lets you control the servos easily
-    def __init__(self, pin, freq, offset=0, maximum=20000):
+    Methods
+    -------
+    zero_degrees()
+        Sets the duty_u16 value of the servo to its "zero state" (the offset)
+    turn_angle(angle, time_ms=1)
+        Turns the servo by the specified angle in the specified time
+    turn_duty(cycle, time_ms=1)
+        Turns the servo by the specified cycle in the specified time
+    set_angle(angle, time_ms=1)
+        Turns the servo to the specified angle in the specified time
+    set_duty(cycle, time_ms=1)
+        Sets the duty_u16 value to the specified cycle in the specified time
+    
+    """
+
+    # offset = 2400 and maximum = 15000 are averaged from tested values. Refer to duty_u16 values
+    def __init__(self, pin, freq, offset=2400, maximum=15000):
+        """
+        Parameters
+        ----------
+        pin : int
+            The GPIO pin that the servo is connected to
+        freq : int
+            The frequency at which the servo is working at
+        offset : int, optional
+            The minimum duty_u16 value that the servo can turn to
+        maximum : int, optional
+            The maximum duty_u16 value that the servo can turn to
+        """
         self.pwm = PWM(Pin(pin), freq)
         self.multiplier = 47.8 # multiplier for angle -> u16 conversion. Tested angle, accurate enough
-        self.offset = int(offset)
-        self.maximum = int(maximum)
+        self.offset = int(offset) # u16 value setting the servo's zero state
+        self.maximum = int(maximum) # u16 value setting the servo's maximum rotation
         self.zero_degrees()
         self.duty_u16 = self.pwm.duty_u16()
         
-    def zero_degrees(self): # Sets the Servo to its 0 state
+    def zero_degrees(self): # Sets the Servo to its zero state
         self.pwm.duty_u16(self.offset)
 
-    def turn_angle(self, angle, t_ms=1): 
+    def turn_angle(self, angle, time_ms=1): 
         # Turns (around) the angle in degrees you ask
         # +ve is anticlockwise looking towards the servo's rotator
         # Can also specify the time in which you want the servo to rotate the angle
-        #  just in case you don't want to fling something
-        for _ in range(t_ms):
-            self.duty_u16 += (angle * self.multiplier / t_ms)
+        #   just in case you don't want to fling something
+        for _ in range(time_ms):
+            self.duty_u16 += (angle * self.multiplier / time_ms)
+            # The servo should only be within the offset (minimum) and maximum
             if self.duty_u16 < self.offset:
                 self.duty_u16 = self.offset
                 print("Cannot turn anymore, preceeding offset")
@@ -35,22 +78,66 @@ class Servo:
         
         self.duty_u16 = int(self.duty_u16)
     
-    def turn_duty(self, cycle):
-        self.duty_u16 += int(cycle)
-        self.pwm.duty_u16(self.duty_u16)
+    def turn_duty(self, cycle, time_ms=1):
+        for _ in range(time_ms):
+            self.duty_u16 += cycle * 1.0 / time_ms
+            if self.duty_u16 < self.offset:
+                self.duty_u16 = self.offset
+                print("Cannot turn anymore, preceeding offset")
+            elif self.duty_u16 > self.maximum:
+                self.duty_u16 = self.maximum
+                print("Cannot turn anymore, exceeding maximum")
+            else:
+                self.pwm.duty_u16(int(self.duty_u16))
 
-grabber = Servo(15, 100, 2400, 15000) # Servo 1, limits are the absolute limits of the servo
-lifter = Servo(13, 100, 2500, 6000) # Servo 2, limits around correct
+    def set_angle(self, angle, time_ms=1):
+        Delta = (self.offset + angle * self.multiplier) - self.duty_u16
+
+        for _ in range(time_ms):
+            self.duty_u16 += (Delta / time_ms)
+            # The servo should only be within the offset (minimum) and maximum
+            if self.duty_u16 < self.offset:
+                self.duty_u16 = self.offset
+                print("Cannot turn anymore, preceeding offset")
+                break
+            if self.duty_u16 > self.maximum:
+                self.duty_u16 = self.maximum
+                print("Cannot turn anymore, exceeding maximum")
+                break
+            self.pwm.duty_u16(int(self.duty_u16))
+            sleep(0.001)
+
+        self.duty_u16 = int(self.duty_u16)
+
+    def set_duty(self, cycle, time_ms=1):
+        Delta = cycle - self.duty_u16
+
+        for _ in range(time_ms):
+            self.duty_u16 += (Delta / time_ms)
+            # The servo should only be within the offset (minimum) and maximum
+            if self.duty_u16 < self.offset:
+                self.duty_u16 = self.offset
+                print("Cannot turn anymore, preceeding offset")
+                break
+            if self.duty_u16 > self.maximum:
+                self.duty_u16 = self.maximum
+                print("Cannot turn anymore, exceeding maximum")
+                break
+            self.pwm.duty_u16(int(self.duty_u16))
+            sleep(0.001)
+            
+        self.duty_u16 = int(self.duty_u16)
 
 def grab():
-    grabber.turn_angle(30)
-    sleep(3)
-    grabber.turn_angle(-30)
+    grabber.set_duty(3600)
+    
+def drop():
+    grabber.turn_duty(-800)
 
 def lift(time_ms=500):
-    lifter.turn_angle(20, time_ms)
+    lifter.turn_duty(900, time_ms)
     
-def calibrate(servo):
+def calibrate(servo: Servo):
     print("Make sure that nothing can break")
     print("Press to make sure that nothing can break")
     input()
@@ -86,14 +173,44 @@ def calibrate(servo):
     print("Your zero is: ", servo.duty_u16)
     print("Set this as your offset for this servo")
     
-def turn(servo):
-    x = ""
-    while x == "":
+def test_turn(servo: Servo, minimum=None, maximum=None):
+    """
+    Gives you the duty_u16 values while rotating the servo for testing purposes
+    
+    Parameters
+    ----------
+    servo : Servo
+        The servo you want to test
+    minimum : int, optional
+        The smallest pwm duty that it will test (Default = servo's offset)
+    maximum : int, optional
+        The largest pwm duty that it will test (Default = servo's maximum)
+    """
+
+    # minimum and maximum are in u16 format. If "None" will just use the servo's limits
+    if minimum == None:
+        minimum = servo.offset
+    if maximum == None:
+        maximum = servo.maximum
+    # Turns the servo to minimum
+    servo.zero_degrees()
+    servo.turn_duty(minimum-servo.offset)
+    # Turns the servo slowly to maximum
+    while servo.duty_u16 < maximum:
         servo.turn_duty(20)
         print(servo.duty_u16)
         sleep(0.1)
-    
+        
+grabber = Servo(15, 100, 2400, 4500) # Servo 1, limits are the maximum we want it to turn
+lifter = Servo(13, 100, 2500, 3700) # Servo 2, limits around correct
 
 if __name__ == "__main__":
-    turn(lifter)
+    reset = 1
+    if reset == 1:
+        print("Reset all servos!")
+    else:
+        sleep(3)
+        test_turn(grabber)
+        sleep(1)
+        test_turn(lifter, maximum=3400)
     
