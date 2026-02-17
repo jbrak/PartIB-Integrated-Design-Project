@@ -5,6 +5,7 @@ from machine import Pin, ADC
 class KeyNodes:
     def __init__(self):
         self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
+        self.coils_perm = [6, 4, 8, 10]
         self.coils = [6, 4, 8, 10]
         self.coil_reading = []
 
@@ -26,7 +27,7 @@ r4 = red
 """
 
 
-def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower):
+def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower, ULTIMATE_count):
 
     sequence = []
 
@@ -112,8 +113,19 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
         #Alogorithm to measure resistance and drop off coil
         pause_count,res = measure_coil(key_nodes, pause_count)
         if res != None:
-            next_node_id = sorted(key_nodes.empty_bays[res])[0]
-            sequence = route(map, current_node_id, next_node_id)[1]
+
+            if ULTIMATE_count == 0:
+                next_node_id = sorted(key_nodes.empty_bays[res])[0]
+                sequence = route(map, current_node_id, next_node_id)[1]
+            elif ULTIMATE_count == 1:
+                sequence = route(map, current_node_id, key_nodes.empty_bays["r2"][0])[1]
+
+                for bays in key_nodes.empty_bays.values():
+                    for bay in bays:
+                        temp_seq = route(map, current_node_id, bay)[1]
+                        if len(temp_seq) < len(sequence):
+                            sequence = temp_seq
+
             status = 104
 
 
@@ -136,18 +148,30 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
                     
             status = 102
 
-    elif status == 105: #Go Home
-        sequence = route(map, current_node_id, 2)[1]
+    elif status == 105:
+
+        ULTIMATE_count +=1#Go Home
+
+        if ULTIMATE_count == 2:
+            sequence = route(map, current_node_id, 2)[1]
+        else:
+            for i in key_nodes.coils_perm:
+                key_nodes.coils.append(i)
+            status = 102
 
         #Note: externally if len(sequence) ==0:, and status = 105, activate parking algorithm
 
 
-    return sequence,status, pause_count
+    return sequence,status, pause_count, ULTIMATE_count
 
 def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
     #Algorithm with sensors to check bays here
     if pause_count == 0:
         pause_count = 10
+        if key_nodes.bays[sector[0]].index(bottom_bay) ==0:
+            pause_count=20
+
+
 
     if pause_count > 1:
         #Check with sensors top_reading, bottom_reading
@@ -160,13 +184,13 @@ def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
         #     f.write("top: "+str(top_reading))
         #     f.write("\n")
         #     f.close()
-
-        key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] += bottom_reading
-        key_nodes.bay_reading[sector[1]][key_nodes.bays[sector[1]].index(top_bay)] += top_reading
+        if pause_count <= 10:
+            key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] += bottom_reading
+            key_nodes.bay_reading[sector[1]][key_nodes.bays[sector[1]].index(top_bay)] += top_reading
 
     else: #pause_count == 1
         #multi-addtional checker - different threshold values for the two sensors
-        threshold = [280*9,280*9]
+        threshold = [300*9,300*9]
         if key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] >= threshold[0]:
             key_nodes.empty_bays[sector[0]].append(bottom_bay)
 

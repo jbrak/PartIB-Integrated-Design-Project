@@ -25,7 +25,9 @@ status:
 def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:DistanceSensor, lower:DistanceSensor, grabber:Servo, lifter:Servo):
     motors.off()
 
-    #input("Press Enter to continue...")
+    # for i in range(0,50):
+    #     bottom_reading = lower.get_distance()
+    #     top_reading = upper.get_distance()
 
     # set speed from config
     speed = config["straights"]['speed']
@@ -41,6 +43,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
     key_nodes = KeyNodes()
     turn_count = 0
     missed_count = 0
+    ULTIMATE_count = 0
 
     TARGET_HZ = 500
     PERIOD_US = 1_000_000 // TARGET_HZ
@@ -88,9 +91,9 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                                 #     print(node, list(map.nodes.get(node).connections.values())[0], robot.last_node_id)
                                 #     if list(map.nodes.get(node).connections.values())[0] == robot.last_node_id:
                                 if robot.last_node_id in bays:
-                                    Pin(11, Pin.OUT).value(1)
+                                    #Pin(11, Pin.OUT).value(1)
                                     #turn_count = key_nodes.turn_count_lookup[robot.last_bay]
-                                    turn_count = 600 #1750
+                                    turn_count = 650 #1750
                                     #print(turn_count)
 
                     next_direction = sequence.pop(0)
@@ -129,7 +132,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
 
                 elif len(sequence) == 0:
                     #print("Sequence complete. Stopping robot.")
-                    sequence, status, pause_count = next_node(map, status, pause_count, robot.next_node_id, key_nodes, upper, lower)
+                    sequence, status, pause_count, ULTIMATE_count = next_node(map, status, pause_count, robot.next_node_id, key_nodes, upper, lower, ULTIMATE_count)
 
                     #print(status, sequence)
 
@@ -247,9 +250,12 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     pause_count = 1
 
                 ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
-                if type(map.nodes.get(robot.next_node_id)) == DeadEnd and node_state == -2:
-                    node_state = -1
-                    offsetS,offsetP = 0,0
+                if node_state == -2:
+                    if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
+                        node_state = -1
+                        offsetS,offsetP = 0,0
+                    else:
+                        node_state = 0
 
             #print(offsetP, offsetS, node_state)
 
@@ -279,6 +285,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
             turn_count = 0
             missed_count = 0
             home(grabber, lifter)
+            ULTIMATE_count = 0
             for i in key_nodes.led_pin_lookup.values():
                 Pin(i, Pin.OUT).value(0)
 

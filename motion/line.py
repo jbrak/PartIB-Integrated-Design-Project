@@ -66,6 +66,18 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
     elif (cp == 0 and cs == 0) and (prev_cp == 1 or prev_cs == 1):
         #print('Lost line')
         #motors.off()
+
+        pause_count += 1
+
+        if offsetP > 0:
+            offsetP = 300
+            offsetS = 0
+
+        elif offsetS > 0:
+            offsetS = 300
+            offsetP = 0
+
+
         return  offsetP,offsetS ,-2, line_data, 100
 
     elif (p, cp, cs, s) == (0, 0, 1, 0):
@@ -99,7 +111,8 @@ def turn(line_sensors: LineSensorArray, speed, node_state, pause_count, sf:float
     if turn_count > 0 and pause_count==0:
         turn_count -= 1
     elif turn_count==0:
-        Pin(11, Pin.OUT).value(0)
+        #Pin(11, Pin.OUT).value(0)
+        pass
 
     #print(turn_count)
 
@@ -157,7 +170,7 @@ def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf
     elif node_state == 8:
         offset = 0 #(1 - sf) * speed
 
-    if count >= 300 and node_state == 8:
+    if count >= 200 and node_state == 8:
         return 0,0,0,count
     else:
         if direction == 'e':
