@@ -11,7 +11,11 @@ def grab(motors, grabber, lifter):
     lifter.set_duty(5000, 100)
     sleep(0.1)
 
-def drop(grabber):
+def drop(motors,grabber):
+    # motors.forward(speed=80)
+    # sleep(0.1)
+    motors.off()
+    sleep(0.1)
     grabber.set_duty(3800, 100)
 
 def home(grabber, lifter):

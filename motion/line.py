@@ -66,7 +66,7 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
     elif (cp == 0 and cs == 0) and (prev_cp == 1 or prev_cs == 1):
         #print('Lost line')
         #motors.off()
-        return 0 ,0 ,-2, line_data, 100
+        return  offsetP,offsetS ,-2, line_data, 100
 
     elif (p, cp, cs, s) == (0, 0, 1, 0):
         #print('Port side lost line, attempting to correct')
@@ -106,7 +106,7 @@ def turn(line_sensors: LineSensorArray, speed, node_state, pause_count, sf:float
     if (cs == 0 or cp == 0) and (node_state == 1 or node_state == 3):
         offset = sf*speed
         node_state += 1
-    elif cs == 1 and cp == 1 and (node_state == 2 or node_state == 4) and (s == 0 and p == 0) and turn_count == 0:
+    elif (cs == 1 or cp == 1) and (node_state == 2 or node_state == 4) and (s == 0 and p == 0) and turn_count == 0:
         return 0,0,0,0,0
     else:
         offset = sf*speed
@@ -150,14 +150,14 @@ def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf
     if node_state == 7:
         offset = sf*speed
 
-        if s ==0 and p ==0 and cp ==0 and cs ==0 and count>=1550:
+        if s ==0 and p ==0 and cp ==0 and cs ==0 and count>=800:
             node_state += 1
             count = 0
 
     elif node_state == 8:
         offset = 0 #(1 - sf) * speed
 
-    if count >= 1000 and node_state == 8:
+    if count >= 300 and node_state == 8:
         return 0,0,0,count
     else:
         if direction == 'e':

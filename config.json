@@ -22,7 +22,7 @@
   "straights": {
     "speed" : 100,
     "saturation": 50,
-    "offset_step_up" : 5,
+    "offset_step_up" : 10,
     "offset_step_down" : 5
   },
 

@@ -4,19 +4,26 @@ from machine import Pin, ADC
 
 class KeyNodes:
     def __init__(self):
-        self.empty_bays = {"r1": [17], "r2": [23], "r3": [41], "r4": [47]}
+        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
         self.coils = [6, 4, 8, 10]
-        self.coil_reading = 0
+        self.coil_reading = []
 
         self.bays = {"r1": [17,18,19,20,21,22], "r2": [23,24,25,26,27,28], "r3": [41,40,39,38,37,36], "r4": [47,46,45,44,43,42]}
         self.bays_searched = {"r1": [], "r2": [], "r3": [], "r4": []}
         self.bay_reading = {"r1": [0]*6, "r2": [0]*6, "r3": [0]*6, "r4": [0]*6}
-        self.r = ["r1","r2","r3","r4"]
-        self.led_pin_lookup = {"r1": 10, "r2": 11, "r3": 14, "r4": 12}
+        self.r = ["r2","r1","r4", "r3"] #["r1","r2","r3","r4"]
+        self.led_pin_lookup = {"r1": 11, "r2": 10, "r3": 14, "r4": 12}
         # self.turn_count_lookup = {17: 1650, 18: 1650, 19: 1650, 20: 1650, 21: 1650, 22: 1650,
         #                           36: 1650, 37:1750, 38:1600, 39:1500, 40:1750, 41:1500,
         #                           23: 1650, 24: 1650, 25: 1650, 26: 1650, 27: 1650, 28: 1650,
         #                           42: 1750, 43: 1750, 44: 1750, 45: 1750, 46: 1750, 47: 1750}
+
+"""
+r1 = green
+r2 = blue
+r3 = yellow
+r4 = red
+"""
 
 
 def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower):
@@ -89,14 +96,16 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
                 if pause_count <= 1:
                     #Pick-up complete
                     key_nodes.coils.remove(current_node_id)
-                    pause_count = 0
-                    status = 103
+                    pause_count = 10
+                    status = 106
 
         else:
             pause_count = 10 #50
             status = 105
 
 
+    elif status == 106:
+        status = 103
 
 
     elif status == 103: #Measure Coil, and deliver
@@ -178,7 +187,9 @@ def measure_coil(key_nodes, pause_count):
     res = None
     if pause_count == 0:
         pause_count = 20
-        key_nodes.coils_reading = 0
+        for i in range(len(key_nodes.coil_reading)):
+            key_nodes.coil_reading.pop(0)
+        #key_nodes.coils_reading = 0
         print("reset pause count, start measuring")
     # elif pause_count == 1:
     #     Pin(key_nodes.led_pin_lookup["r4"], Pin.OUT).value(1)
@@ -189,10 +200,9 @@ def measure_coil(key_nodes, pause_count):
     if pause_count > 1:
         #Check with resistor circuit reading
         res_reading = adc.read_u16()
+        key_nodes.coil_reading.append(res_reading)
 
-        key_nodes.coil_reading += res_reading
-
-        print("Resistor Reading: ", res_reading, "Sum:", key_nodes.coil_reading)
+        print("Resistor Reading: ", res_reading, "Sum:", key_nodes.coil_reading, "Pause Count: ", pause_count)
 
         # with open("coil_reading.txt", "w") as f:
         #     f.write(str(res_reading) + ", " +str(key_nodes.coil_reading))
@@ -205,9 +215,13 @@ def measure_coil(key_nodes, pause_count):
         threshold = [4000,10000,40000,44000]
 
         for i in range(len(threshold)):
-            if key_nodes.coil_reading<=(threshold[i]*19) and res == None:
+            sum_readings = sum(key_nodes.coil_reading)
+            if sum_readings<=(threshold[i]*19) and res == None:
                 res = key_nodes.r[i]
                 Pin(key_nodes.led_pin_lookup[res], Pin.OUT).value(1)
                 break
 
+            # if i == 3:
+            #     res = 'r1'
+    #print(res)
     return pause_count,res

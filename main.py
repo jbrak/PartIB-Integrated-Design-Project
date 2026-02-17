@@ -79,7 +79,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                 #     sequence = copy_sequence.copy()
 
                 if len(sequence) > 0:
-                    turn_count = 0
+                    turn_count = 300
                     if len(sequence) > 0:
                         if sequence[0] == "s":
                             for bays in key_nodes.bays.values():
@@ -90,7 +90,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                                 if robot.last_node_id in bays:
                                     Pin(11, Pin.OUT).value(1)
                                     #turn_count = key_nodes.turn_count_lookup[robot.last_bay]
-                                    turn_count = 450 #1750
+                                    turn_count = 600 #1750
                                     #print(turn_count)
 
                     next_direction = sequence.pop(0)
@@ -123,7 +123,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     # print(sequence)
 
                 elif len(sequence) == 0 and status == 105 and pause_count == 0:
-                    Pin(10, Pin.OUT).value(1)
+                    #Pin(10, Pin.OUT).value(1)
                     node_state = 7
                     count = 0
 
@@ -236,43 +236,45 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                 motors.s.off()
                 pause_count -= 1
 
-                if status == 103:
+                if status == 106:
                     ## Code for picking up coil
                     grab(motors, grabber, lifter)
-                    pause_count = 1
+                    pause_count = 0
 
                 elif status == 104 and len(sequence) == 0 and not node_state in [9,10]:
                     ## Code for releasing coil
-                    drop(grabber)
+                    drop(motors,grabber)
                     pause_count = 1
 
                 ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
                 if type(map.nodes.get(robot.next_node_id)) == DeadEnd and node_state == -2:
                     node_state = -1
+                    offsetS,offsetP = 0,0
 
             #print(offsetP, offsetS, node_state)
 
             if missed_count > 0 and robot.direction == "s" and pause_count == 0:
                 missed_count -= 1
-                Pin(14, Pin.OUT).value(1)
+                #Pin(14, Pin.OUT).value(1)
 
                 if missed_count == 1:
                     home(grabber, lifter)
 
             elif missed_count == 0:
-                Pin(14, Pin.OUT).value(0)
+                #Pin(14, Pin.OUT).value(0)
+                pass
 
         else:
             motors.off()
             #robot = Robot(map, start_node_id=9, direction='n')
-            robot = Robot(map, start_node_id=30, direction='s')
+            robot = Robot(map, start_node_id=1, direction='n')
             offsetP = 0
             offsetS = 0
-            node_state = 0  # 0: straight, 1: turning, 2: finishing turn
+            node_state = 5  # 0: straight, 1: turning, 2: finishing turn
             prev_reading = {'p': 0, 's': 0}
             sequence = []
             pause_count = 0
-            status = 102 #101
+            status = 101 #101
             key_nodes = KeyNodes()
             turn_count = 0
             missed_count = 0
