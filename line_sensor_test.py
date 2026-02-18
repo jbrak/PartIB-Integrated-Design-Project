@@ -13,7 +13,6 @@ class Line_sensor:
     Methods
     -------
     read() -> int
-        Returns the value from the sensor
     """
     def __init__(self, pin):
         """
