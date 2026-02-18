@@ -3,6 +3,39 @@ from map.route import *
 from machine import Pin, ADC
 
 class KeyNodes:
+    """
+    Handles all of the key nodes
+    
+    Attributes
+    ----------
+    empty_bays : dict
+        Dictionary of all of the empty bays 
+    coils_perm : list
+        List of the node IDs of the nodes that hold coils (doesn't change)
+    coils : list
+        List of the node IDs of the nodes that hold coils
+    coil_reading : list
+        List of ADC readings whenever a coil's resistance is being measured
+    bays : dict
+        Holds the node IDs of all of the bays
+    bays_searched : dict
+        Holds the node IDs of all of the bays that have been searched
+    bay_reading : dict
+        Holds the sensor readings for all of the bays
+    r : list
+        List of rack locations
+    led_pin_lookup : dict
+        Holds the GPIO pins of the LEDs corresponding to each rack location
+    """
+
+    """
+    Rack Locations:
+    r1: Lower Rack A, Green
+    r2: Upper Rack A, Blue
+    r3: Lower Rack B, Yellow
+    r4: Upper Rack B, Red
+    """
+
     def __init__(self):
         self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
         self.coils_perm = [6, 4, 8, 10]
@@ -19,15 +52,29 @@ class KeyNodes:
         #                           23: 1650, 24: 1650, 25: 1650, 26: 1650, 27: 1650, 28: 1650,
         #                           42: 1750, 43: 1750, 44: 1750, 45: 1750, 46: 1750, 47: 1750}
 
-"""
-r1 = green
-r2 = blue
-r3 = yellow
-r4 = red
-"""
-
-
 def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower, ULTIMATE_count):
+    """
+    Returns the sequence of nodes to get to the next node
+
+    Parameters
+    ----------
+    map : Map
+        The map that the robot will be traversing
+    status : int
+        Dictates what the program should do
+    pause_count : int
+        Counter dictating how long to pause for (???)
+    current_node_id : int
+        The ID of the node the robot is currently on
+    key_nodes : KeyNodes
+        KeyNodes object holding information on the nodes holding bays or coils
+    upper
+        Upper sensor
+    lower
+        Lower sensor
+    ULTIMATE_count
+        Counter dictating the strategy that the robot uses to deliver the coils
+    """
 
     sequence = []
 
@@ -165,7 +212,27 @@ def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower
     return sequence,status, pause_count, ULTIMATE_count
 
 def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
-    #Algorithm with sensors to check bays here
+    """
+    Algorithm with sensors to check bays here
+    Returns the corresponding pause count
+
+    Parameters
+    ----------
+    sector : list
+        List holding a rack pair (Rack A or Rack B)
+    bottom_bay : int
+        The node ID of the bottom bay that's being checked
+    top_bay : int
+        The node ID of the top bay that's being checked
+    pause_count : int
+        Counter dictating how long to pause for (???)
+    key_nodes : KeyNodes
+        KeyNodes object holding information on the nodes holding bays or coils
+    upper
+        Upper sensor
+    lower
+        Lower sensor
+    """
     if pause_count == 0:
         pause_count = 10
         if key_nodes.bays[sector[0]].index(bottom_bay) ==0:
@@ -200,10 +267,19 @@ def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
 
     return pause_count
 
-
-
 def measure_coil(key_nodes, pause_count):
-    #Measures and determines the resistoance of coils
+    """
+    Measures and determines the resistance of coils. 
+    Returns the calculated resistance of the coil (and the corresponding pause count)
+    
+    Parameters
+    ----------
+    key_nodes : KeyNodes
+        KeyNodes object holding information on the nodes holding bays or coils
+    pause_count : int
+        Counter dictating how long to pause for (???)
+    """
+
     adc = ADC(Pin(28))
 
     print("103")
