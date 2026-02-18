@@ -3,6 +3,14 @@ from collections import deque
 def route(map, start_id: int, goal_id: int):
     """
     Finds the shortest path between two nodes in a map using breadth-first search.
+    Returns the list of directions to go as well as a list of nodes that it will go through
+
+    Parameters
+    ----------
+    start_id : int
+        The ID of the node the robot starts on
+    goal_id : int
+        The ID of the node the robot is trying to get to
     """
     # handle trivial case
     if start_id == goal_id:

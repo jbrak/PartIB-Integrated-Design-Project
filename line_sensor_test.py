@@ -2,9 +2,29 @@ from machine import Pin
 from utime import sleep
 
 class Line_sensor:
-    """Class to represent a line sensor."""
+    """
+    Class to represent a line sensor.
+    
+    Attributes
+    ----------
+    sensor : Pin
+        Holds the line sensor's pin
+
+    Methods
+    -------
+    read() -> int
+        Returns the value from the sensor
+    """
     def __init__(self, pin):
-        """Initialize line sensor on specified pin."""
+        """
+        Initialize line sensor on specified pin.
+
+        Parameters
+        ----------
+        pin : int
+            GPIO pin used for the line sensor
+        """
+
         self.sensor = Pin(pin, Pin.IN)  # set line sensor pin
 
     def read(self):
