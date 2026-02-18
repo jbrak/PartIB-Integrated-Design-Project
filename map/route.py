@@ -7,6 +7,8 @@ def route(map, start_id: int, goal_id: int):
 
     Parameters
     ----------
+    map : Map
+        The map of nodes that the robot is traversing
     start_id : int
         The ID of the node the robot starts on
     goal_id : int
