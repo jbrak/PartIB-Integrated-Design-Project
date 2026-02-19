@@ -1,7 +1,8 @@
 from utime import sleep
 
 def grab(motors, grabber, lifter):
-    motors.forward(speed=80)
+    motors.s.forward(speed=80)
+    motors.p.forward(speed=85)
     sleep(0.5)
     motors.off()
     lifter.set_duty(3700, 100)
@@ -10,6 +11,10 @@ def grab(motors, grabber, lifter):
     sleep(0.1)
     lifter.set_duty(5000, 100)
     sleep(0.1)
+    motors.s.reverse(speed = 80)
+    motors.p.reverse(speed= 90)
+    sleep(1)
+    motors.off()
 
 def drop(motors,grabber):
     motors.forward(speed=80)
@@ -18,7 +23,8 @@ def drop(motors,grabber):
     sleep(0.1)
     grabber.set_duty(3800, 100)
     sleep(0.1)
-    motors.reverse(speed=80)
+    motors.s.reverse(speed=80)
+    motors.p.reverse(speed=90)
     sleep(0.5)
     motors.off()
 

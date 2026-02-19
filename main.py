@@ -181,6 +181,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                                                              saturation=config["straights"]['saturation'],
                                                              offset_step_up=config["straights"]['offset_step_up'],
                                                              offset_step_down=config["straights"]['offset_step_down'], pause_count=pause_count)
+                    turn_count = 200
 
                 else:
 
@@ -189,8 +190,6 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     for i in current_node.connections.keys():
                         if i not in ['n', 's']:
                             direction_temp = i
-
-                    turn_count = 0
 
                     offsetP, offsetS, node_state, prev_reading, count, pause_count, turn_count = bay_turning(
                         line_sensors=LineSensors, prev_reading=prev_reading, node_state=10,

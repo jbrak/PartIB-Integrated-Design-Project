@@ -190,7 +190,7 @@ def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
 
     else: #pause_count == 1
         #multi-addtional checker - different threshold values for the two sensors
-        threshold = [300*9,300*9]
+        threshold = [280*9,280*9]
         if key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] >= threshold[0]:
             key_nodes.empty_bays[sector[0]].append(bottom_bay)
 
