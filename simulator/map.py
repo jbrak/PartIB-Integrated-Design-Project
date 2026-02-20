@@ -47,9 +47,6 @@ class DrawableNode():
         self.DOTSIZE = DOTSIZE
         self.COLOR = colors.get(self.type, 'gray')
 
-
-
-
 class DrawableMap():
     """
     Object for the drawable map
@@ -58,14 +55,34 @@ class DrawableMap():
     ----------
     nodes : dict
         Holds a dictionary of nodes and their 
-    to_define
-    start_id
+    to_define : list
+        Holds a list of things to define (????)
+    start_id : int
+        Holds the ID of the starting node
     
-
-    
+    Methods
+    -------
+    static direction_to_offset(direction) -> dict
+    generate_positions(node_id, LENGTH=50)
+    get_positions() -> dict
     """
+
     def __init__(self, map: Map, start_pos=(0,0), DOTSIZE=10, LENGTH=50):
-        ''' Initializes a DrawableMap from a given Map.'''
+        """
+        Initializes a DrawableMap from a given Map.
+        
+        Parameters
+        ----------
+        map : Map
+            The map that the DrawableMap is based off of
+        start_pos : tuple, optional
+            The starting position (Default = (0,0))
+        DOTSIZE : int, optional
+            The size of the dot on the drawing of the map (Default = 10)
+        LENGTH : int, optional
+            The length of the line between nodes on the drawable map (Default = 50)
+        """
+
         self.nodes = {}
         self.to_define = []
 
@@ -81,12 +98,17 @@ class DrawableMap():
 
         self.generate_positions(start.id, LENGTH=LENGTH)
 
-
-
-
     @staticmethod
     def direction_to_offset(direction):
-        ''' Converts a direction to an (x, y) offset.'''
+        """
+        Converts a direction to an (x, y) offset.
+        
+        Parameters
+        ----------
+        direction : tuple
+            The direction that needs to be offset
+        """
+
         offsets = {
             'n': (0, 1),
             's': (0, -1),
@@ -98,7 +120,17 @@ class DrawableMap():
         return offsets[direction]
 
     def generate_positions(self, node_id, LENGTH=50):
-        ''' Generates positions for nodes based on their connections.'''
+        """
+        Generates positions for nodes based on their connections.
+        
+        Parameters
+        ----------
+        node_id : int
+            The ID of the node that is getting its positions generated
+        LENGTH : int, optional
+            The length of the line between nodes on the drawable map (Default = 50)
+        """
+        
         node = self.nodes.get(node_id)
         if not node.position:
             raise ValueError(f"Node {node.id} has no position defined.")
@@ -124,12 +156,11 @@ class DrawableMap():
             self.generate_positions(self.to_define.pop(0), LENGTH=LENGTH)
 
     def get_positions(self):
-        ''' Returns a dictionary of node ids to their positions.'''
+        """Returns a dictionary of node ids to their positions."""
         positions = {}
         for id, node in self.nodes.items():
             positions[id] = node.position
         return positions
-
 
 if __name__ == '__main__':
     m = Map()

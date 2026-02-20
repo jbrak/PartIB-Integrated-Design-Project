@@ -4,12 +4,18 @@ class Robot:
     
     Attributes
     ----------
-    last_node_id
+    last_node_id : int
+        Holds the ID of the previous node 
+    direction : str
+        Holds the direction that the robot is going to
+    next_node_id : int
+        Holds the ID of the next node
 
     Methods
     -------
     update_direction(next_direction : str) -> str
     """
+    
     def __init__(self, map,start_node_id,direction='n'):
         '''
         Initializes the robot at a starting node in the map facing a given direction.
@@ -35,10 +41,9 @@ class Robot:
         Parameters
         ----------
         next_direction : str
-            The next direction the robot needs to go
+            The next direction the robot needs to go to
         
         '''
-
 
         direction_map = {'n' : {'n': 'f', 'e': 's', 's': 'b', 'w': 'p'},
                          'e' : {'n': 'p', 'e': 'f', 's': 's', 'w': 'b'},
