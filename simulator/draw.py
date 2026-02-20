@@ -7,7 +7,16 @@ from simulator.robot import *
 
 '''python -m simulator.draw'''
 def draw_nodes(t:Turtle,start_node, end_node):
-    ''' Draws a connection between two nodes on the map.'''
+    """
+    Draws a connection between two nodes on the map
+    
+    Parameters
+    ----------
+    t : Turtle
+        The turtle that will draw the map connections
+    start_node : int
+        Node ID of te 
+    """
 
     # Get the positions of the start and end nodes
     start_pos = start_node.position

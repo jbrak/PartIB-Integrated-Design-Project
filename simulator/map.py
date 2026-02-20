@@ -1,8 +1,36 @@
 from map.map import *
 
 class DrawableNode():
+    """
+    Class for defining the nodes that are drawn
+    
+    Attributes
+    ----------
+    id : int
+        Holds the ID for the drawable node
+    type : str
+        Holds the type for the drawable node
+    connections : dict
+        Holds a dictionary of all the nodes this node is connected to and how they're connected to it
+    position : None
+        Holds the position of the node (???)
+    DOTSIZE : int
+        Holds the size of the dot in the map
+    COLOR : str
+        Holds the colour of the dot
+    """
+
     def __init__(self, node: Node, DOTSIZE=10):
-        ''' Initializes a DrawableNode from a given Node and position.'''
+        """
+        Initializes a DrawableNode from a given Node and position.
+        
+        Parameters 
+        ----------
+        node : Node
+            The node that the drawable node is based off of
+        DOTSIZE : int
+            The size of the dot on the drawing of the map
+        """
         colors = {
             'start': 'green',
             'dead_end': 'red',
@@ -23,6 +51,19 @@ class DrawableNode():
 
 
 class DrawableMap():
+    """
+    Object for the drawable map
+
+    Attributes
+    ----------
+    nodes : dict
+        Holds a dictionary of nodes and their 
+    to_define
+    start_id
+    
+
+    
+    """
     def __init__(self, map: Map, start_pos=(0,0), DOTSIZE=10, LENGTH=50):
         ''' Initializes a DrawableMap from a given Map.'''
         self.nodes = {}
