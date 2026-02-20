@@ -16,9 +16,10 @@ from machine import Pin
 """
 status:
 101: Initializing, detecting empty spaces
-102: picking up coil, measure resistance
-103: dropping off coil in relevent bay
-104: going home
+102: Pick up coil
+103/106: Measure coil and deliver
+104: Drop off coil
+105: Go home
 """
 
 
@@ -37,7 +38,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
     offsetS = 0
     node_state = 5 # 0: straight, 1: turning, 2: finishing turn
     prev_reading = {'p':0, 's':0}
-    sequence = []
+    sequence = [] # Sequence of directions for the robot to go to its next direction
     pause_count = 0
     status = 101
     key_nodes = KeyNodes()
@@ -249,7 +250,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                     drop(motors,grabber)
                     pause_count = 1
 
-                ### This should be within a separate reverse function - the robot detects in neds to travel backwards and does so
+                ### This should be within a separate reverse function - the robot detects it needs to travel backwards and does so
                 if node_state == -2:
                     if type(map.nodes.get(robot.next_node_id)) == DeadEnd:
                         node_state = -1

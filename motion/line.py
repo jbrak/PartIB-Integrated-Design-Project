@@ -20,8 +20,30 @@ Node states:
 10 : bay turning - executing turn
 11 : Reversing out of dead end
 """
-def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,pause_count, saturation=50, offset_step_up=1, offset_step_down=5):
-    """Drive straight while both outer line sensors detect the line."""
+
+def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading, pause_count, saturation=50, offset_step_up=1, offset_step_down=5):
+    """
+    Drive straight while both outer line sensors detect the line.
+    Returns the 2 offsets, node state, line sensor data and updated pause count.
+    
+    Parameters
+    ----------
+    line_sensors : LineSensorArray
+        All 4 line sensors and their states
+    offsetP : int
+        Controls the operation of the port motor
+    offsetS : int
+        Controls the operation of the starboard motor
+    prev_reading : dict
+        The previous 4 saved readings from the line sensor
+    pause_count : int
+        Pads out other count variables to make them take longer
+    saturation : int, optional
+        Maximum offset for the specific straight line being followed (Default = 50)
+    offset_step_up : int, optional
+        The value to step up the offset whenever the robot needs to turn (Default = 1)
+    """
+
     line_data = line_sensors.read_all()
     p = line_data.get('p')
     cp = line_data.get('cp')
@@ -100,7 +122,24 @@ def straight_line(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,
     return offsetP, offsetS, node_state, line_data, pause_count
 
 def turn(line_sensors: LineSensorArray, speed, node_state, pause_count, sf:float=0.83333, turn_count=0):
-    """turn at a node"""
+    """
+    Turn at a node. Returns the 2 offsets, node state, and the updated turn count and pause count.
+    
+    Parameters
+    ----------
+    line_sensors : LineSensorArray
+        All 4 line sensors and their states
+    speed : int
+        The current speed of the robot
+    node_state : int
+        The "action regime" that the robot is in 
+    pause_count : int
+        Pads out other count variables to make them take longer
+    sf : int, optional
+        Speed factor, the fraction of speed that should be the new offset (Default = 0.83333)
+    turn_count : int, optional
+        The value to step up the offset whenever the robot needs to turn (Default = 0)
+    """
 
     line_data = line_sensors.read_all()
     p = line_data.get('p')
@@ -130,7 +169,19 @@ def turn(line_sensors: LineSensorArray, speed, node_state, pause_count, sf:float
         return 0, offset, node_state, turn_count, pause_count
 
 def startup(line_sensors: LineSensorArray, node_state, prev_reading):
-    """Initial alignment at startup"""
+    """
+    Initial alignment at startup. Returns the new node state and the line sensor data.
+    
+    Parameters
+    ----------
+    line_sensors : LineSensorArray
+        All 4 line sensors and their states
+    node_state : int
+        The "action regime" that the robot is in
+    prev_reading : dict
+        The previous 4 saved readings from the line sensor
+    """
+
     line_data = line_sensors.read_all()
     p = line_data.get('p')
     cp = line_data.get('cp')
@@ -151,7 +202,25 @@ def startup(line_sensors: LineSensorArray, node_state, prev_reading):
     return node_state, line_data
 
 def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf:float=0.83333):
-    """Parking maneuver at the end of the course"""
+    """
+    Parking maneuver at the end of the course. Returns the 2 offsets, node state and count
+    
+    Parameters
+    ----------
+    line_sensors : LineSensorArray
+        All 4 line sensors and their states
+    speed : int
+        The current speed of the robot
+    node_state : int
+        The "action regime" that the robot is in 
+    direction : str
+        Cardinal direction that the robot needs to move in
+    count : int
+        count
+    sf : int, optional
+        Speed factor, the fraction of speed that should be the new offset (Default = 0.83333)
+    """
+
     line_data = line_sensors.read_all()
     p = line_data.get('p')
     cp = line_data.get('cp')
@@ -181,7 +250,36 @@ def parking(line_sensors: LineSensorArray, speed, node_state, direction,count,sf
             return 0,0,0,count
 
 def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, direction, count,pause_count, turn_count, speed, saturation, offset_step_up, offset_step_down):
-    """Bay turning maneuver at dead-end nodes"""
+    """
+    Bay turning maneuver at dead-end nodes
+    Returns the 2 offsets, the node states, line sensor data, and the 3 counts that were passed in
+    
+    Parameters
+    ----------
+    line_sensors : LineSensorArray
+        All 4 line sensors and their states
+    node_state : int
+        The "action regime" that the robot is in 
+    prev_reading : dict
+        The previous 4 saved readings from the line sensor
+    direction : str
+        Cardinal direction that the robot needs to move in
+    count : int
+        count
+    pause_count : int
+        Pads out other count variables to make them take longer
+    turn_count : int
+        The value to step up the offset whenever the robot needs to turn
+    speed : int
+        The current speed of the robot
+    saturation : int
+        Maximum offset for the specific straight line being followed
+    offset_step_up : int
+        The value to step up the offset whenever the robot needs to turn
+    offset_step_down : int
+        The value to step down the offset whenever the robot needs to turn
+    """
+
     line_data = line_sensors.read_all()
     p = line_data.get('p')
     cp = line_data.get('cp')
@@ -238,6 +336,31 @@ def bay_turning(line_sensors: LineSensorArray, node_state, prev_reading, directi
     return offsetP, offsetS, node_state, line_data, count, pause_count, turn_count
 
 def reverse(line_sensors: LineSensorArray, offsetP, offsetS, prev_reading,speed, pause_count, saturation=50, offset_step_up=1, offset_step_down=5):
+    """
+    Reverses the robot
+    
+    Parameters
+    ----------
+    line_sensors : LineSensorArray
+        All 4 line sensors and their states
+    offsetP : int
+        Controls the operation of the port motor
+    offsetS : int
+        Controls the operation of the starboard motor
+    prev_reading : dict
+        The previous 4 saved readings from the line sensor
+    speed : int
+        The current speed of the robot
+    pause_count : int
+        Pads out other count variables to make them take longer
+    saturation : int
+        Maximum offset for the specific straight line being followed (Default = 50)
+    offset_step_up : int
+        The value to step up the offset whenever the robot needs to turn (Default = 1)
+    offset_step_down : int
+        The value to step down the offset whenever the robot needs to turn (Default = 5)
+    """
+
     line_data = line_sensors.read_all()
     p = line_data.get('p')
     cp = line_data.get('cp')
