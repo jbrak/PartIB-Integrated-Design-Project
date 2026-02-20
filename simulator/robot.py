@@ -3,9 +3,28 @@ from simulator.map import DrawableMap
 import turtle as ttl
 
 class DrawableRobot(Robot):
-    ''' A drawable robot that extends the basic Robot class.'''
+    """
+    A drawable robot that extends the basic Robot class.
+
+    Attributes
+    ----------
+    last_node_id : int
+        Holds the ID of the previous node 
+    direction : str
+        Holds the direction that the robot is going to
+    next_node_id : int
+        Holds the ID of the next node
+    position : 
+    """
+    
     def __init__(self, map:DrawableMap,start_node_id, direction='n'):
-        ''' Initializes the drawable robot at a starting node in the map facing a given direction.'''
+        """
+        Initializes the drawable robot at a starting node in the map facing a given direction.
+        
+        map : DrawableMap
+            The drawn map that the robot will be 
+        """
+
         super().__init__(map,start_node_id, direction)
         self.position = map.nodes[start_node_id].position
         self.next_node_position = map.nodes[self.next_node_id].position
