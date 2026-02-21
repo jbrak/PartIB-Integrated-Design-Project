@@ -12,8 +12,8 @@ class DrawableNode():
         Holds the type for the drawable node
     connections : dict
         Holds a dictionary of all the nodes this node is connected to and how they're connected to it
-    position : None
-        Holds the position of the node (???)
+    position : tuple
+        Holds an (x,y) position of the node
     DOTSIZE : int
         Holds the size of the dot in the map
     COLOR : str
@@ -163,6 +163,7 @@ class DrawableMap():
         return positions
 
 if __name__ == '__main__':
+    """Test code for the map (used in the progress meeting)"""
     m = Map()
     m = Map()
 
