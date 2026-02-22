@@ -16,8 +16,9 @@ from machine import Pin
 """
 status:
 101: Initializing, detecting empty spaces
-102: Pick up coil
-103/106: Measure coil and deliver
+102: Drive to next coil bay
+106: Pick Up coil
+103: Measure coil and deliver
 104: Drop off coil
 105: Go home
 """
