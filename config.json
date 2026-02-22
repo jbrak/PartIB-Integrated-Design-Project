@@ -1,0 +1,45 @@
+{
+  "motor": {
+    "port": {
+      "pinDIR": 4,
+      "pinPWM": 5,
+      "driftCompensation" : 5
+    },
+    "starboard": {
+      "pinDIR": 7,
+      "pinPWM": 6,
+      "driftCompensation" : 0
+    }
+  },
+  "lineSensor": {
+    "pinPort": 21,
+    "pinCenterPort": 19,
+    "pinCenterStarboard": 20,
+    "pinStarboard": 18
+  },
+  "buttonPin": 0,
+
+  "straights": {
+    "speed" : 100,
+    "saturation": 50,
+    "offset_step_up" : 10,
+    "offset_step_down" : 5
+  },
+
+  "turns": {
+    "scale_factor": 0.8
+  },
+
+  "box":{
+  "upper": {
+    "sda" : 8,
+      "scl" : 9,
+      "id": 0
+  },
+    "lower": {
+      "sda" : 2,
+      "scl" : 3,
+      "id": 1
+    }
+}
+}

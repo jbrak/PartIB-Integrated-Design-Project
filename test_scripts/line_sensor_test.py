@@ -1,0 +1,49 @@
+from machine import Pin
+from utime import sleep
+
+class Line_sensor:
+    """
+    Class to represent a line sensor.
+    
+    Attributes
+    ----------
+    sensor : Pin
+        Holds the line sensor's pin
+
+    Methods
+    -------
+    read() -> int
+    """
+    def __init__(self, pin):
+        """
+        Initialize line sensor on specified pin.
+
+        Parameters
+        ----------
+        pin : int
+            GPIO pin used for the line sensor
+        """
+
+        self.sensor = Pin(pin, Pin.IN)  # set line sensor pin
+
+    def read(self):
+        """Read the value from the line sensor."""
+        return self.sensor.value()  # return sensor value (0 or 1)
+
+def test_line_sensor():
+    """Test function for line sensors."""
+    line_sensor_1 = Line_sensor(pin=18)  # Microcontroller Pins: Pin 24
+    line_sensor_2 = Line_sensor(pin=19)  # Microcontroller Pins: Pin 25
+    line_sensor_3 = Line_sensor(pin=20)  # Microcontroller Pins: Pin 26
+    line_sensor_4 = Line_sensor(pin=21)  # Microcontroller Pins: Pin 27
+
+    while True:
+        sensor_value_1 = line_sensor_1.read()
+        sensor_value_2 = line_sensor_2.read()
+        sensor_value_3 = line_sensor_3.read()
+        sensor_value_4 = line_sensor_4.read()
+        #uses serial communication to print the value
+        print("Line Sensor Value:", sensor_value_1, sensor_value_2, sensor_value_3, sensor_value_4)
+        sleep(1.0)
+
+test_line_sensor()

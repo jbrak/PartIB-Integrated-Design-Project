@@ -1,0 +1,327 @@
+from map.map import *
+from map.route import *
+from machine import Pin, ADC
+
+class KeyNodes:
+    """
+    Handles all of the key nodes
+    
+    Attributes
+    ----------
+    empty_bays : dict
+        Dictionary of all of the empty bays 
+    coils_perm : list
+        List of the node IDs of the nodes that hold coils (doesn't change)
+    coils : list
+        List of the node IDs of the nodes that hold coils
+    coil_reading : list
+        List of ADC readings whenever a coil's resistance is being measured
+    bays : dict
+        Holds the node IDs of all of the bays
+    bays_searched : dict
+        Holds the node IDs of all of the bays that have been searched
+    bay_reading : dict
+        Holds the sensor readings for all of the bays
+    r : list
+        List of rack locations
+    led_pin_lookup : dict
+        Holds the GPIO pins of the LEDs corresponding to each rack location
+    """
+
+    """
+    Rack Locations:
+    r1: Lower Rack A, Green
+    r2: Upper Rack A, Blue
+    r3: Lower Rack B, Yellow
+    r4: Upper Rack B, Red
+    """
+
+    def __init__(self):
+        self.empty_bays = {"r1": [], "r2": [], "r3": [], "r4": []}
+        self.coils_perm = [6, 4, 8, 10]
+        self.coils = [6, 4, 8, 10]
+        self.coil_reading = []
+
+        self.bays = {"r1": [17,18,19,20,21,22], "r2": [23,24,25,26,27,28], "r3": [41,40,39,38,37,36], "r4": [47,46,45,44,43,42]}
+        self.bays_searched = {"r1": [], "r2": [], "r3": [], "r4": []}
+        self.bay_reading = {"r1": [0]*6, "r2": [0]*6, "r3": [0]*6, "r4": [0]*6}
+        self.r = ["r2","r1","r4", "r3"] #["r1","r2","r3","r4"]
+        self.led_pin_lookup = {"r1": 11, "r2": 10, "r3": 14, "r4": 12}
+        # self.turn_count_lookup = {17: 1650, 18: 1650, 19: 1650, 20: 1650, 21: 1650, 22: 1650,
+        #                           36: 1650, 37:1750, 38:1600, 39:1500, 40:1750, 41:1500,
+        #                           23: 1650, 24: 1650, 25: 1650, 26: 1650, 27: 1650, 28: 1650,
+        #                           42: 1750, 43: 1750, 44: 1750, 45: 1750, 46: 1750, 47: 1750}
+
+def next_node(map, status, pause_count, current_node_id, key_nodes, upper, lower, ULTIMATE_count):
+    """
+    Returns the sequence of nodes to get to the next node
+
+    Parameters
+    ----------
+    map : Map
+        The map that the robot will be traversing
+    status : int
+        Dictates what the program should do
+    pause_count : int
+        Counter dictating how long to pause for (???)
+    current_node_id : int
+        The ID of the node the robot is currently on
+    key_nodes : KeyNodes
+        KeyNodes object holding information on the nodes holding bays or coils
+    upper
+        Upper sensor
+    lower
+        Lower sensor
+    ULTIMATE_count
+        Counter dictating the strategy that the robot uses to deliver the coils
+    """
+
+    sequence = []
+
+    if status == 101: #Initialising - locating empty bays
+        
+        #Scanning the bay
+        if len(key_nodes.bays_searched["r3"])>0:
+            pause_count = check_bay(["r3","r4"],key_nodes.bays_searched["r3"][-1],key_nodes.bays_searched["r4"][-1],pause_count,key_nodes, upper = upper, lower = lower)
+        elif len(key_nodes.bays_searched["r1"])>0:
+            pause_count = check_bay(["r1","r2"],key_nodes.bays_searched["r1"][-1],key_nodes.bays_searched["r2"][-1],pause_count,key_nodes, upper = upper, lower = lower)
+
+
+        #Selects the next bay to go to
+        if pause_count <=1:
+            if len(key_nodes.bays_searched["r1"]) <6:
+
+                i =len(key_nodes.bays_searched["r1"])
+                next_node_id = key_nodes.bays["r1"][i]
+                key_nodes.bays_searched["r1"].append(next_node_id)
+                key_nodes.bays_searched["r2"].append(key_nodes.bays["r2"][i])
+
+                sequence = route(map, current_node_id, next_node_id)[1][:-1]
+
+            elif len(key_nodes.bays_searched["r3"]) <6:
+
+                i =len(key_nodes.bays_searched["r3"])
+                next_node_id = key_nodes.bays["r3"][i]
+                key_nodes.bays_searched["r3"].append(next_node_id)
+                key_nodes.bays_searched["r4"].append(key_nodes.bays["r4"][i])
+
+                sequence = route(map, current_node_id, next_node_id)[1][:-1]
+
+            else:
+                # print(key_nodes.empty_bays)
+                # print(key_nodes.bay_reading)
+
+                with open("bay_reading.txt", "w") as f:
+                    f.write(str(key_nodes.bay_reading))
+                    f.write("\n")
+                    f.write(str(key_nodes.empty_bays))
+                    f.close()
+
+                status = 102
+
+            
+
+
+    elif status == 102: #Pick up coil
+        
+        if len(key_nodes.coils) !=0:
+
+            #Some way to choose closest coil?
+            sequence = route(map, current_node_id, key_nodes.coils[0])[1]
+
+            #print("sequence", sequence)
+
+            for coil in key_nodes.coils:
+                temp_seq = route(map, current_node_id, coil)[1]
+                if len(temp_seq) < len(sequence):
+                    sequence = temp_seq
+
+            if len(sequence) == 0:
+                #Reached coil, activate picking up mech
+                if pause_count == 0:
+                    pause_count = 2 #100
+
+                if pause_count <= 1:
+                    #Pick-up complete
+                    key_nodes.coils.remove(current_node_id)
+                    pause_count = 10
+                    status = 106
+
+        else:
+            pause_count = 10 #50
+            status = 105
+
+
+    elif status == 106:
+        status = 103
+
+
+    elif status == 103: #Measure Coil, and deliver
+        #Alogorithm to measure resistance and drop off coil
+        pause_count,res = measure_coil(key_nodes, pause_count)
+        if res != None:
+
+            if ULTIMATE_count == 0:
+                next_node_id = sorted(key_nodes.empty_bays[res])[0]
+                sequence = route(map, current_node_id, next_node_id)[1]
+            elif ULTIMATE_count == 1:
+                sequence = route(map, current_node_id, key_nodes.empty_bays["r2"][0])[1]
+
+                for bays in key_nodes.empty_bays.values():
+                    for bay in bays:
+                        temp_seq = route(map, current_node_id, bay)[1]
+                        if len(temp_seq) < len(sequence):
+                            sequence = temp_seq
+
+            status = 104
+
+
+    elif status == 104: #Drop Off Coil
+
+        # Turn all LEDs off
+        for i in key_nodes.led_pin_lookup.values():
+            Pin(i, Pin.OUT).value(0)
+
+        if pause_count == 0:
+            pause_count = 100
+
+        if pause_count <=1:
+            #Drop off complete - updating empty bay list
+
+            for key, values in key_nodes.empty_bays.items():
+                if current_node_id in values:
+                    key_nodes.empty_bays[key].remove(current_node_id)
+
+                    
+            status = 102
+
+    elif status == 105:
+
+        ULTIMATE_count +=1#Go Home
+
+        if ULTIMATE_count == 2:
+            sequence = route(map, current_node_id, 2)[1]
+        else:
+            for i in key_nodes.coils_perm:
+                key_nodes.coils.append(i)
+            status = 102
+
+        #Note: externally if len(sequence) ==0:, and status = 105, activate parking algorithm
+
+
+    return sequence,status, pause_count, ULTIMATE_count
+
+def check_bay(sector,bottom_bay,top_bay,pause_count,key_nodes, upper, lower):
+    """
+    Algorithm with sensors to check bays here
+    Returns the corresponding pause count
+
+    Parameters
+    ----------
+    sector : list
+        List holding a rack pair (Rack A or Rack B)
+    bottom_bay : int
+        The node ID of the bottom bay that's being checked
+    top_bay : int
+        The node ID of the top bay that's being checked
+    pause_count : int
+        Counter dictating how long to pause for (???)
+    key_nodes : KeyNodes
+        KeyNodes object holding information on the nodes holding bays or coils
+    upper
+        Upper sensor
+    lower
+        Lower sensor
+    """
+    if pause_count == 0:
+        pause_count = 10
+        if key_nodes.bays[sector[0]].index(bottom_bay) ==0:
+            pause_count=20
+
+
+
+    if pause_count > 1:
+        #Check with sensors top_reading, bottom_reading
+        bottom_reading = lower.get_distance()
+        top_reading= upper.get_distance()
+        
+        # with open("bay_reading2.txt", "a") as f:
+        #     f.write("bottom: "+str(bottom_reading))
+        #     f.write(",")
+        #     f.write("top: "+str(top_reading))
+        #     f.write("\n")
+        #     f.close()
+        if pause_count <= 10:
+            key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] += bottom_reading
+            key_nodes.bay_reading[sector[1]][key_nodes.bays[sector[1]].index(top_bay)] += top_reading
+
+    else: #pause_count == 1
+        #multi-addtional checker - different threshold values for the two sensors
+        threshold = [300*9,300*9]
+        if key_nodes.bay_reading[sector[0]][key_nodes.bays[sector[0]].index(bottom_bay)] >= threshold[0]:
+            key_nodes.empty_bays[sector[0]].append(bottom_bay)
+
+        if key_nodes.bay_reading[sector[1]][key_nodes.bays[sector[1]].index(top_bay)] >= threshold[1]:
+            key_nodes.empty_bays[sector[1]].append(top_bay)
+
+
+    return pause_count
+
+def measure_coil(key_nodes, pause_count):
+    """
+    Measures and determines the resistance of coils. 
+    Returns the calculated resistance of the coil (and the corresponding pause count)
+    
+    Parameters
+    ----------
+    key_nodes : KeyNodes
+        KeyNodes object holding information on the nodes holding bays or coils
+    pause_count : int
+        Counter dictating how long to pause for (???)
+    """
+
+    adc = ADC(Pin(28))
+
+    print("103")
+
+    res = None
+    if pause_count == 0:
+        pause_count = 20
+        for i in range(len(key_nodes.coil_reading)):
+            key_nodes.coil_reading.pop(0)
+        #key_nodes.coils_reading = 0
+        print("reset pause count, start measuring")
+    # elif pause_count == 1:
+    #     Pin(key_nodes.led_pin_lookup["r4"], Pin.OUT).value(1)
+    #     return pause_count, key_nodes.r.pop(0)
+    #
+    # return pause_count, None
+
+    if pause_count > 1:
+        #Check with resistor circuit reading
+        res_reading = adc.read_u16()
+        key_nodes.coil_reading.append(res_reading)
+
+        print("Resistor Reading: ", res_reading, "Sum:", key_nodes.coil_reading, "Pause Count: ", pause_count)
+
+        # with open("coil_reading.txt", "w") as f:
+        #     f.write(str(res_reading) + ", " +str(key_nodes.coil_reading))
+        #     f.write("Hello World")
+        #     f.write("\n")
+        #     f.close()
+
+    else: #pause_count == 1
+        #decide on which resistor is correct
+        threshold = [4000,10000,40000,44000]
+
+        for i in range(len(threshold)):
+            sum_readings = sum(key_nodes.coil_reading)
+            if sum_readings<=(threshold[i]*19) and res == None:
+                res = key_nodes.r[i]
+                Pin(key_nodes.led_pin_lookup[res], Pin.OUT).value(1)
+                break
+
+            # if i == 3:
+            #     res = 'r1'
+    #print(res)
+    return pause_count,res

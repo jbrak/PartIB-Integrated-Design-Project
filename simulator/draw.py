@@ -4,9 +4,22 @@ from time import sleep
 from simulator.map import *
 from map.map import Map
 from simulator.robot import *
+
 '''python -m simulator.draw'''
+
 def draw_nodes(t:Turtle,start_node, end_node):
-    ''' Draws a connection between two nodes on the map.'''
+    """
+    Draws a connection between two nodes on the map
+    
+    Parameters
+    ----------
+    t : Turtle
+        The turtle that will draw the map connections
+    start_node : int
+        Node ID of the node that the turtle starts at
+    end_node : int
+        Node ID of the node that the turtle ends at
+    """
 
     # Get the positions of the start and end nodes
     start_pos = start_node.position
@@ -24,7 +37,17 @@ def draw_nodes(t:Turtle,start_node, end_node):
     t.penup()
 
 def draw_map(t:Turtle, dm:DrawableMap):
-    ''' Draws the entire drawable map using the provided turtle.'''
+    """
+    Draws the entire drawable map using the provided turtle.
+    
+    Parameters
+    ----------
+    t : Turtle
+        The turtle that will draw the map connections
+    dm : DrawableMap
+        The simulated map
+    """
+
     # Hide the turtle while drawing
     t.hideturtle()
 
@@ -39,7 +62,20 @@ def draw_map(t:Turtle, dm:DrawableMap):
 
 
 def move_robot(t:Turtle, drawable_robot:DrawableRobot, dm:DrawableMap, next_direction=None):
-    ''' Moves the drawable robot to a new position.'''
+    """
+    Moves the drawable robot to a new position.
+    
+    Parameters
+    ----------
+    t : Turtle
+        The turtle that will draw the map connections
+    drawable_robot : DrawableRobot
+        The simulated robot
+    dm : DrawableMap
+        The simulated map
+    next_direction : str
+        The direction of the next node that the robot has to go to
+    """
 
     # Define heading map and offsets
     heading_map = {"n":90, "e":0, "s":270, "w":180}
@@ -70,11 +106,29 @@ def move_robot(t:Turtle, drawable_robot:DrawableRobot, dm:DrawableMap, next_dire
         drawable_robot.next_node_position = dm.nodes[drawable_robot.next_node_id].position
 
 def sim_move(robot:DrawableRobot2):
-    ''' Simulates a simple forward movement of the turtle.'''
+    """
+    Simulates a simple forward movement of the turtle.
+    
+    Parameters
+    ----------
+    robot : DrawableRobot2
+        The simulated robot
+    """
+
     robot.t.forward(1)
 
 def sim_check_node(r:DrawableRobot2, dm: DrawableMap,):
-    '''Checks if the Next Node Has been Reached'''
+    """
+    Checks if the next node has been reached. Return the result
+    
+    Parameters
+    ----------
+    r : DrawableRobot2
+        The simulated robot
+    dm : DrawableMap
+        The simulated map
+    """
+
     pos = (int(r.t.xcor()), int(r.t.ycor()))
 
     if pos == dm.nodes[r.next_node_id].position:
@@ -82,12 +136,35 @@ def sim_check_node(r:DrawableRobot2, dm: DrawableMap,):
     return False
 
 def sim_turn(r:DrawableRobot2):
+    """
+    Simulates a turn on the drawable map uaing a turtle
+    
+    Parameters
+    ----------
+    r : DrawableRobot2
+        The simulated robot
+    """
+
     heading_map = {"n": 90, "e": 0, "s": 270, "w": 180}
 
     r.t.setheading(heading_map[r.direction])
 
 def initialize_simulator(m:Map, robot:Robot, LENGTH=60, start_pos=(0,-100)):
-    '''Initializes the simulator environment.'''
+    """
+    Initializes the simulator environment.
+    
+    Parameters
+    ----------
+    m : Map
+        The map
+    robot : Robot
+        The robot
+    LENGTH : int, optional
+        The length of the line between nodes on the drawable map (Default = 60)
+    start_pos : tuple
+        The position of the starting box the robot will start in (Default (0,-100))
+    """
+    
     # Create a drawable map with starting position
     dm = DrawableMap(m, start_pos=start_pos, LENGTH=LENGTH)
 
@@ -118,10 +195,11 @@ def initialize_simulator(m:Map, robot:Robot, LENGTH=60, start_pos=(0,-100)):
     return dm, robot
 
 def finalize_simulator():
-    '''Finalizes the simulator environment.'''
+    """Finalizes the simulator environment."""
     ttl.done()
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
+    """Test code for testing the drawing parts"""
     # Create a map instance
     m = Map()
 

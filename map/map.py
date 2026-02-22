@@ -1,7 +1,25 @@
 class Node:
-    ''' Represents a node in the map with connections to other nodes. '''
+    ''' 
+    Represents a node in the map with connections to other nodes. 
+    
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    '''
     def __init__(self, id:int, connections: dict):
-        ''' Initializes a Node with an ID and its connections.'''
+        '''
+        Initializes a Node with an ID and its connections.
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        connections : dict
+            A dictionary of the other nodes that it is connected to, as well as where they are    
+        '''
 
         keys = set(connections.keys())
         valid_keys = {'n', 's', 'e', 'w'}
@@ -25,16 +43,69 @@ f'''Node ID: {self.id}
 '''
 
 class StartNode(Node):
-    ''' Represents the starting node in the map. Assumes a single northerly connection.'''
+    '''
+    Represents the starting node in the map. Assumes a single northerly connection.
+    
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    type : str
+        Holds what type of node it is (returns 'start' for StartNode)
+    '''
+
     def __init__(self, id, n:int):
+        '''
+        Initializes a Node with an ID and its connections.
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        n : dict
+            The ID of the node that the start node is connected to 
+        '''
+
         connections = {'n': n}
         super().__init__(id, connections)
         self.type = 'start'
 
 class TJunction(Node):
-    ''' Represents a T-junction node in the map.'''
-    def __init__(self, id,missing: str, *, n=None, s=None, e=None, w=None):
-        ''' Initializes a T-junction with one missing connection.'''
+    '''
+    Represents a T-junction node in the map.
+    
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    type : str
+        Holds what type of node it is (returns 't_junction' for TJunction)
+    missing : str
+        Holds the direction that doesn't have a connected node
+    '''
+    def __init__(self, id, missing: str, *, n=None, s=None, e=None, w=None):
+        '''
+        Initializes a T-junction with one missing connection.
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        missing : str
+            The direction that doesn't have a connected node
+        n : int, optional
+            Holds the ID of the node to the north (Default = None)
+        s : int, optional
+            Holds the ID of the node to the south (Default = None)
+        e : int, optional
+            Holds the ID of the node to the east (Default = None)
+        w : int, optional
+            Holds the ID of the node to the west (Default = None)
+        '''
 
         # Requres one direction to be missing
         if missing not in {'n', 's', 'e', 'w'}:
@@ -57,17 +128,110 @@ class TJunction(Node):
         self.type = 't_junction'
         self.missing = missing
 
+class Bay(TJunction):
+    '''
+    Represents a bay node in the map
+    
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    type : str
+        Holds what type of node it is (returns 't_junction' for Bay)
+    missing : str
+        Holds the direction that doesn't have a connected node
+    '''
+    def __init__(self, id, missing: str, *, n=None, s=None, e=None, w=None):
+        '''
+        Initializes a bay with one missing connection.
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        missing : str
+            The direction that doesn't have a connected node
+        n : int, optional
+            Holds the ID of the node to the north (Default = None)
+        s : int, optional
+            Holds the ID of the node to the south (Default = None)
+        e : int, optional
+            Holds the ID of the node to the east (Default = None)
+        w : int, optional
+            Holds the ID of the node to the west (Default = None)
+        '''
+        super().__init__(id, missing, n=n, s=s, e=e, w=w)
+
 class PlusJunction(Node):
-    ''' Represents a junction node in the map with all four connections.'''
+    '''
+    Represents a junction node in the map with all four connections.
+    
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    type : str
+        Holds what type of node it is (returns '+_junction' for PlusJunction)
+    '''
     def __init__(self, id, *, n:int, s:int, e:int, w:int):
+        '''
+        Initializes a Junction with no missing connections.
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        n : int, optional
+            Holds the ID of the node to the north
+        s : int, optional
+            Holds the ID of the node to the south
+        e : int, optional
+            Holds the ID of the node to the east
+        w : int, optional
+            Holds the ID of the node to the west
+        '''
         connections = {'n': n, 's': s, 'e': e, 'w': w}
         super().__init__(id, connections)
         self.type = '+_junction'
 
 class Corner(Node):
-    ''' Represents a corner node in the map.'''
+    '''
+    Represents a corner node in the map.
+    
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    type : str
+        Holds what type of node it is (returns 'corner' for Corner)
+    connected : (str,str)
+        Holds the directions which have connected nodes
+    '''
     def __init__(self,id, connected: tuple, *, n=None, s=None, e=None, w=None):
-        ''' Initializes a corner with two connected directions.'''
+        '''
+        Initializes a corner with two connected directions.
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        connected : (str,str)
+            Holds the directions which have connected nodes
+        n : int, optional
+            Holds the ID of the node to the north (Default = None)
+        s : int, optional
+            Holds the ID of the node to the south (Default = None)
+        e : int, optional
+            Holds the ID of the node to the east (Default = None)
+        w : int, optional
+            Holds the ID of the node to the west (Default = None)
+        '''
 
         # Require connected to be a tuple of two directions
         if len(connected) != 2 or not all(d in {'n', 's', 'e', 'w'} for d in connected):
@@ -92,9 +256,31 @@ class Corner(Node):
         self.connected = connected
 
 class Marker(Node):
-    """A marker node that lies on a straight line (NS or EW) with no branching."""
+    """
+    A marker node that lies on a straight line (NS or EW) with no branching.
+
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    type : str
+        Holds what type of node it is (returns 'marker' for Marker)
+    direction : set
+        Holds the directions of the connected nodes
+    """
     def __init__(self, id, connections: dict):
-        ''' Initializes a Marker with two colinear connections.'''
+        '''
+        Initializes a Marker with two colinear connections.
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        connections : dict
+            A dictionary of the other nodes that it is connected to, as well as where they are
+        '''
         # Require exactly two co-linear connections
         dirs = set(connections.keys())
         if dirs not in ({'n', 's'}, {'e', 'w'}):
@@ -108,8 +294,36 @@ class Marker(Node):
         self.direction = dirs
 
 class DeadEnd(Node):
-    """Represents a dead-end node in the map (exactly one connection)."""
+    """
+    Represents a dead-end node in the map (exactly one connection).
+    
+    Attributes
+    ----------
+    id : int
+        Holds the node's unique ID
+    connections : dict
+        Holds all of the other nodes that it is connected to, as well as where they are
+    type : str
+        Holds what type of node it is (returns 'dead_end' for DeadEnd)
+    """
     def __init__(self, id, *, n=None, s=None, e=None, w=None):
+        '''
+        Initializes a dead-end node in the map
+        
+        Parameters
+        ----------
+        id : int
+            The node's unique ID
+        n : int, optional
+            Holds the ID of the node to the north (Default = None)
+        s : int, optional
+            Holds the ID of the node to the south (Default = None)
+        e : int, optional
+            Holds the ID of the node to the east (Default = None)
+        w : int, optional
+            Holds the ID of the node to the west (Default = None)
+        '''
+
         # Collect provided directions
         conns = {'n': n, 's': s, 'e': e, 'w': w}
         connections = {d: v for d, v in conns.items() if v is not None}
@@ -121,21 +335,51 @@ class DeadEnd(Node):
         self.type = 'dead_end'
 
 class Map:
-    ''' Represents a map of nodes with connections. '''
+    '''
+    Represents a map of nodes with connections.
+    
+    Attributes
+    ----------
+    nodes : dict
+        Holds the nodes that are in the map, as well as their IDs
+    
+    Methods
+    -------
+    _opposite_dir(d : str) -> str
+    add_node(node : Node) -> Node
+    add(*nodes : tuple) -> Map
+    consistency_errors() -> list
+    assert_consistent()
+    '''
     def __init__(self):
-        ''' Initializes an empty Map. '''
+        '''Initializes an empty Map.'''
+
         self.nodes = {}
 
     @staticmethod # Just means its not dependent on self
     def _opposite_dir(d: str) -> str:
-        ''' Returns the opposite direction for a given direction. '''
+        '''
+        Returns the opposite direction for a given direction.
+        
+        Parameters
+        ----------
+        d : str
+            The direction you want to change
+        '''
         opp = {'n': 's', 's': 'n', 'e': 'w', 'w': 'e'}
         if d not in opp:
             raise ValueError(f"Invalid direction '{d}'")
         return opp[d]
 
     def add_node(self, node):
-        ''' Adds a node to the map after validation. '''
+        ''' 
+        Adds a node to the map after validation.
+        
+        Parameters
+        ----------
+        node : Node
+            The node you want to add
+        '''
 
         # Prevent duplicate node ids
         if node.id in self.nodes:
@@ -153,7 +397,14 @@ class Map:
         return node
 
     def add(self, *nodes):
-        ''' Adds multiple nodes to the map. '''
+        '''
+        Adds multiple nodes to the map.
+        
+        Parameters
+        ----------
+        nodes : tuple
+            All of the nodes tha you would like to add
+        '''
         for n in nodes:
             self.add_node(n)
         return self

@@ -21,7 +21,7 @@ class Motor:
 
 
 def test_motor3():
-    motor3 = Motor(dirPin=4, PWMPin=5)  # Motor 3 is controlled from Motor Driv2 #1, which is on GP4/5
+    motor3 = Motor(dirPin=4, PWMPin=5)  # Motor 3 is controlled from Motor Driv2 #1, which is on GP4/5 DIR:4, PWM:5
 
     while True:
         try:
