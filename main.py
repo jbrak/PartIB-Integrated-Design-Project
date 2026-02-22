@@ -224,7 +224,7 @@ def main(motors, LineSensors, button:Button, map : Map, robot : Robot, upper:Dis
                 if offsetP <= speed:
                     motors.p.forward(speed, offset=offsetP)
                 elif offsetP == 3*speed:
-                    motors.s.off()
+                    motors.p.off()
                 elif offsetP > speed:
                     motors.p.reverse(speed*0.8, offset=(speed*2-offsetP))
 
