@@ -5,13 +5,12 @@ This repository contains our code and documentation for the Part IB Inegrated de
 ## Reference Frames
 The code uses the following reference frames:
 1. Map Frame: 
-2. 
+2. Robot Frame
 
 ### 1. Map Frame
 A fixed frame of reference relative to the provided map.
 
-This uses North, South, East and West as directions oriented as so:
-
+This uses North, South, East and West as directions oriented as shown in map.jpg.
 
 In the project these are often shorted to n, s, e and w.
 
